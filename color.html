@@ -1,0 +1,2072 @@
+
+
+
+===当前地图============
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>恋爱冒险地图</title>
+    <meta name="darkreader-lock">
+
+    <link rel="preconnect" href="https://fontsapi.zeoseven.com" crossorigin>
+        
+<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<script src="https://cdn.cbd.int/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
+
+<style>
+        /* CSS变量 - 统一设计系统 */
+        :root {
+            /* 字体系统 */
+            --font-primary: "TsangerFeiBai W03",-apple-system, BlinkMacSystemFont,"Sarasa UI SC", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --font-display: "SF Pro Display", -apple-system,"Sarasa UI SC", BlinkMacSystemFont, sans-serif;
+            --font-mono: "SF Mono","Sarasa UI SC", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace;
+            
+            /* 字号系统 */
+            --text-xs: 0.75rem;
+            --text-sm: 0.875rem;
+            --text-base: 1rem;
+            --text-lg: 1.125rem;
+            --text-xl: 1.25rem;
+            --text-2xl: 1.5rem;
+            --text-3xl: 1.875rem;
+            --text-4xl: 2.25rem;
+            
+            /* 间距系统 */
+            --space-1: 0.25rem;
+            --space-2: 0.5rem;
+            --space-3: 0.75rem;
+            --space-4: 1rem;
+            --space-5: 1.25rem;
+            --space-6: 1.5rem;
+            --space-8: 2rem;
+            --space-10: 2.5rem;
+            --space-12: 3rem;
+            --space-16: 4rem;
+            
+            /* 圆角系统 */
+            --radius-sm: 0.25rem;
+            --radius-md: 0.375rem;
+            --radius-lg: 0.5rem;
+            --radius-xl: 0.75rem;
+            --radius-2xl: 1rem;
+            --radius-3xl: 1.5rem;
+            
+            /* 动画系统 */
+            --duration-fast: 150ms;
+            --duration-normal: 250ms;
+            --duration-slow: 350ms;
+            --ease-out: cubic-bezier(0.0, 0.0, 0.2, 1);
+            --ease-in: cubic-bezier(0.4, 0.0, 1, 1);
+            --ease-in-out: cubic-bezier(0.4, 0.0, 0.2, 1);
+            --ease-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+            
+            /* 阴影系统 */
+            --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            
+            /* 颜色系统 - 亮色主题 */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #f1f5f9;
+            --bg-quaternary: #e2e8f0;
+            
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-tertiary: #64748b;
+            --text-quaternary: #94a3b8;
+            --text-inverse: #ffffff;
+            
+            --border-primary: #e2e8f0;
+            --border-secondary: #cbd5e1;
+            --border-focus: #3b82f6;
+            
+            --accent-primary: #3b82f6;
+            --accent-secondary: #1d4ed8;
+            --accent-tertiary: #dbeafe;
+            
+            --success: #10b981;
+            --success-bg: #d1fae5;
+            --warning: #f59e0b;
+            --warning-bg: #fef3c7;
+            --error: #ef4444;
+            --error-bg: #fee2e2;
+            
+            /* Z-index系统 */
+            --z-dropdown: 1000;
+            --z-sticky: 1020;
+            --z-fixed: 1030;
+            --z-modal-backdrop: 1040;
+            --z-modal: 1050;
+            --z-popover: 1060;
+            --z-tooltip: 1070;
+        }
+
+        /* 暗色主题 */
+        html[data-theme='dark'] {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --bg-quaternary: #475569;
+            
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-tertiary: #94a3b8;
+            --text-quaternary: #64748b;
+            --text-inverse: #0f172a;
+            
+            --border-primary: #334155;
+            --border-secondary: #475569;
+            
+            --accent-primary: #60a5fa;
+            --accent-secondary: #3b82f6;
+            --accent-tertiary: #1e293b;
+            
+            --success: #34d399;
+            --success-bg: #064e3b;
+            --warning: #fbbf24;
+            --warning-bg: #451a03;
+            --error: #f87171;
+            --error-bg: #7f1d1d;
+        }
+
+        /* 基础重置和优化 */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            font-size: 16px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color var(--duration-normal) var(--ease-out),
+                        color var(--duration-normal) var(--ease-out);
+            overflow-x: hidden;
+        }
+
+        /* 性能优化的动画基类 */
+        .animate-smooth {
+            will-change: transform, opacity;
+            backface-visibility: hidden;
+            transform: translateZ(0);
+        }
+
+        .animate-hover {
+            transition: transform var(--duration-fast) var(--ease-out),
+                        box-shadow var(--duration-fast) var(--ease-out);
+        }
+
+        .animate-hover:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .animate-press:active {
+            transform: translateY(0) scale(0.98);
+            transition-duration: var(--duration-fast);
+        }
+
+        /* 折叠控制栏 */
+        .page-collapser {
+            position: sticky;
+            top: 0;
+            z-index: var(--z-sticky);
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px) saturate(180%);
+            border-bottom: 1px solid var(--border-primary);
+            padding: var(--space-3) 0;
+            text-align: center;
+            transition: all var(--duration-normal) var(--ease-out);
+        }
+
+        html[data-theme='dark'] .page-collapser {
+            background: rgba(15, 23, 42, 0.8);
+        }
+
+        #collapse-toggle-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-family: var(--font-primary);
+            font-size: var(--text-sm);
+            cursor: pointer;
+            padding: var(--space-2) var(--space-6);
+            border-radius: var(--radius-lg);
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            transition: all var(--duration-fast) var(--ease-out);
+        }
+
+        #collapse-toggle-btn:hover {
+            color: var(--accent-primary);
+            background-color: var(--accent-tertiary);
+            transform: translateY(-1px);
+        }
+
+        #collapse-toggle-btn i {
+            transition: transform var(--duration-normal) var(--ease-back);
+        }
+
+        body.is-collapsed #collapse-toggle-btn i {
+            transform: rotate(180deg);
+        }
+
+        /* 地图容器动画优化 */
+        .map-wrapper {
+            overflow: hidden;
+            padding: var(--space-4);
+            max-height: 100vh;
+        }
+
+        body.is-collapsed .map-wrapper {
+            max-height: 0;
+            opacity: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+
+        .map-interface {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-xl);
+            padding: var(--space-8);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(20px) saturate(180%);
+            transition: all var(--duration-normal) var(--ease-out);
+        }
+
+        .map-interface::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg,
+                rgba(59, 130, 246, 0.03) 0%,
+                rgba(147, 51, 234, 0.02) 100%);
+            pointer-events: none;
+        }
+
+        /* 加载状态优化 */
+        .map-wrapper.is-loading {
+            position: relative;
+        }
+
+        .map-wrapper.is-loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 40px;
+            height: 40px;
+            margin: -20px 0 0 -20px;
+            border: 3px solid var(--border-primary);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            z-index: var(--z-modal);
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 头部区域 */
+        .map-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-6);
+            padding-bottom: var(--space-6);
+            border-bottom: 1px solid var(--border-primary);
+            gap: var(--space-4);
+        }
+
+        .map-header h2 {
+            font-family: var(--font-primary);
+            font-size: var(--text-3xl);
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin: 0;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-info {
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .top-right-buttons {
+            display: flex;
+            gap: var(--space-3);
+            flex-wrap: wrap;
+        }
+
+        /* 按钮系统重新设计 */
+        .btn {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-2);
+            padding: var(--space-3) var(--space-4);
+            font-family: var(--font-primary);
+            font-size: var(--text-sm);
+            font-weight: 500;
+            line-height: 1;
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            text-decoration: none;
+            white-space: nowrap;
+            user-select: none;
+            transition: all var(--duration-fast) var(--ease-out);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn:hover {
+            border-color: var(--accent-primary);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0) scale(0.98);
+            transition-duration: var(--duration-fast);
+        }
+
+        .btn:focus-visible {
+            outline: 2px solid var(--accent-primary);
+            outline-offset: 2px;
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: var(--text-inverse);
+            border-color: var(--accent-primary);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-secondary);
+            border-color: var(--accent-secondary);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: var(--text-inverse);
+            border-color: var(--success);
+        }
+
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border-radius: var(--radius-xl);
+        }
+
+        /* 通知徽章 */
+        .notification-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 18px;
+            height: 18px;
+            background: var(--error);
+            color: var(--text-inverse);
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--bg-primary);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* 重要人物区域 */
+        .current-partners-section {
+            margin-bottom: var(--space-6);
+            padding: var(--space-5);
+            background: linear-gradient(135deg,
+                rgba(59, 130, 246, 0.05) 0%,
+                rgba(147, 51, 234, 0.03) 100%);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: var(--radius-xl);
+            backdrop-filter: blur(8px);
+        }
+
+        .current-partners-section.hidden {
+            display: none;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-4);
+            gap: var(--space-4);
+        }
+
+        .section-title {
+            font-weight: 600;
+            color: var(--accent-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        /* 搜索功能 */
+        #character-search-container {
+            flex: 1;
+            max-width: 300px;
+        }
+
+        .character-search-input {
+            width: 100%;
+            padding: var(--space-2) var(--space-4);
+            background: var(--bg-primary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            color: var(--text-primary);
+            font-size: var(--text-sm);
+            transition: all var(--duration-fast) var(--ease-out);
+        }
+
+        .character-search-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .character-search-input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        #search-toggle-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            padding: var(--space-2);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--duration-fast) var(--ease-out);
+        }
+
+        #search-toggle-btn:hover {
+            color: var(--accent-primary);
+            background: var(--accent-tertiary);
+        }
+
+        /* 人物按钮列表 */
+        .partner-button-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-3);
+        }
+
+        .partner-button {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-2) var(--space-4);
+            background: var(--bg-primary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-xl);
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: var(--text-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--duration-fast) var(--ease-out);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .partner-button:hover {
+            border-color: var(--accent-primary);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px);
+        }
+
+        .partner-button .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-primary);
+        }
+
+        .avatar-fallback {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-inverse);
+            font-weight: 600;
+            font-size: var(--text-sm);
+        }
+
+        /* 可视化地图容器 */
+        #visual-map-container {
+            position: relative;
+            width: 100%;
+            height: clamp(400px, 50vh, 600px);
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-2xl);
+            overflow: hidden;
+            margin-bottom: var(--space-6);
+            box-shadow: var(--shadow-lg);
+            cursor: grab;
+            transition: all var(--duration-normal) var(--ease-out);
+        }
+
+        #visual-map-container:active {
+            cursor: grabbing;
+        }
+
+        #visual-map-container:focus-within {
+            border-color: var(--accent-primary);
+            box-shadow: var(--shadow-xl), 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        #visual-map {
+            width: 100%;
+            height: 100%;
+            display: block;
+            touch-action: none;
+            user-select: none;
+        }
+
+        /* 地图控制按钮 */
+        .map-custom-controls {
+            position: absolute;
+            top: var(--space-4);
+            right: var(--space-4);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px) saturate(180%);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-xl);
+            padding: var(--space-2);
+            box-shadow: var(--shadow-lg);
+        }
+
+        html[data-theme='dark'] .map-custom-controls {
+            background: rgba(15, 23, 42, 0.9);
+        }
+
+        .map-custom-controls .btn-icon {
+            width: 36px;
+            height: 36px;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+        }
+
+        .map-custom-controls .btn-icon:hover {
+            background: var(--accent-tertiary);
+            transform: scale(1.1);
+        }
+
+        /* 地图元素样式 */
+        .map-location-group {
+            cursor: pointer;
+            transition: all var(--duration-normal) var(--ease-out);
+            transform-origin: center;
+        }
+
+        .map-location-group:hover {
+            transform: scale(1.05);
+        }
+
+        .map-location-rect {
+            fill: var(--bg-primary);
+            stroke: var(--border-primary);
+            stroke-width: 2px;
+            transition: all var(--duration-normal) var(--ease-out);
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+        }
+
+        .map-location-group:hover .map-location-rect {
+            stroke: var(--accent-primary);
+            stroke-width: 3px;
+            filter: drop-shadow(0 4px 8px rgba(59, 130, 246, 0.2));
+        }
+
+        .map-location-label {
+            fill: var(--text-primary);
+            text-anchor: middle;
+            dominant-baseline: middle;
+            font-family: var(--font-primary);
+            font-weight: 600;
+            font-size: 14px;
+            pointer-events: none;
+            user-select: none;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .map-location-group.is-current-location .map-location-rect {
+            stroke: var(--accent-primary);
+            stroke-width: 2px;
+            fill: rgba(59, 130, 246, 0.2);
+            transform-origin: center center;
+            animation: glowPulse 2.5s ease-in-out infinite;
+        }
+
+        @keyframes glowPulse {
+            0%, 100% {
+                filter: drop-shadow(0 0 3px var(--accent-primary));
+                stroke-width: 2px;
+            }
+            50% {
+                filter: drop-shadow(0 0 10px var(--accent-primary)) drop-shadow(0 0 20px rgba(59, 130, 246, 0.5));
+                stroke-width: 4px;
+            }
+        }
+
+        .map-location-group.is-current-location .map-location-label {
+            fill: var(--accent-primary);
+            font-weight: 700;
+        }
+
+        /* 外部区域 */
+        .external-areas-section {
+            padding: var(--space-5);
+            background: linear-gradient(135deg,
+                rgba(16, 185, 129, 0.05) 0%,
+                rgba(5, 150, 105, 0.03) 100%);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: var(--radius-xl);
+            backdrop-filter: blur(8px);
+        }
+
+        .external-areas-section.hidden {
+            display: none;
+        }
+
+        .external-area-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-3);
+        }
+
+        .external-area-button {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-3) var(--space-4);
+            background: transparent;
+            border: 2px dashed var(--border-secondary);
+            border-radius: var(--radius-lg);
+            color: var(--text-secondary);
+            font-size: var(--text-sm);
+            cursor: pointer;
+            transition: all var(--duration-fast) var(--ease-out);
+        }
+
+        .external-area-button:hover {
+            background: var(--success-bg);
+            border-style: solid;
+            border-color: var(--success);
+            color: var(--success);
+            transform: translateY(-1px);
+        }
+
+        /* 模态框系统 */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px) saturate(180%);
+            z-index: var(--z-modal-backdrop);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-4);
+            opacity: 1;
+            visibility: visible;
+            transition: all var(--duration-normal) var(--ease-out);
+        }
+
+        .modal-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .modal-dialog {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-xl);
+            padding: var(--space-8);
+            width: min(90vw, 500px);
+            max-height: 90vh;
+            position: relative;
+            backdrop-filter: blur(20px) saturate(180%);
+            transform: scale(1) translateY(0);
+            transition: all var(--duration-normal) var(--ease-back);
+        }
+
+        .modal-overlay.hidden .modal-dialog {
+            transform: scale(0.95) translateY(20px);
+        }
+
+        .modal-dialog h4 {
+            font-family: var(--font-display);
+            font-size: var(--text-2xl);
+            font-weight: 700;
+            color: var(--accent-primary);
+            text-align: center;
+            margin-bottom: var(--space-6);
+        }
+
+        .close-modal-button {
+            position: absolute;
+            top: var(--space-4);
+            right: var(--space-4);
+            background: none;
+            border: none;
+            font-size: var(--text-2xl);
+            color: var(--text-tertiary);
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--duration-fast) var(--ease-out);
+        }
+
+        .close-modal-button:hover {
+            background: var(--error-bg);
+            color: var(--error);
+        }
+
+        /* 交互选项网格 */
+        .interaction-options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: var(--space-3);
+            margin-top: var(--space-6);
+        }
+
+        .interaction-button {
+            padding: var(--space-4);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            color: var(--text-primary);
+            font-size: var(--text-sm);
+            cursor: pointer;
+            text-align: center;
+            transition: all var(--duration-fast) var(--ease-out);
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .interaction-button:hover {
+            background: var(--accent-tertiary);
+            border-color: var(--accent-primary);
+            transform: translateY(-1px);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .map-interface {
+                padding: var(--space-4);
+                border-radius: var(--radius-xl);
+            }
+
+            .map-header {
+                flex-direction: column;
+                gap: var(--space-3);
+                text-align: center;
+            }
+
+            .map-header h2 {
+                font-size: var(--text-2xl);
+            }
+
+            .top-right-buttons {
+                order: -1;
+                justify-content: center;
+                width: 100%;
+            }
+
+            #visual-map-container {
+                height: clamp(300px, 40vh, 400px);
+            }
+
+            .partner-button-list,
+            .external-area-buttons {
+                overflow-x: auto;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+                padding-bottom: var(--space-2);
+            }
+
+            .partner-button-list::-webkit-scrollbar,
+            .external-area-buttons::-webkit-scrollbar {
+                display: none;
+            }
+
+            .modal-dialog {
+                padding: var(--space-6);
+                width: 95vw;
+            }
+
+            .interaction-options-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+</style>
+
+</head>
+<body>
+        <div class="page-collapser">
+            <button id="collapse-toggle-btn" title="收起/展开小地图" aria-expanded="true">
+                <span class="label-collapse">收起小地图</span>
+                <span class="label-expand">展开小地图</span>
+                <i class="fas fa-chevron-up" aria-hidden="true"></i>
+            </button>
+        </div>
+    <div class="map-wrapper">
+
+        <div class="map-interface">
+            <div class="map-header">
+                <h2 id="map-title"></h2>
+                <div class="header-info"><span id="map-time"></span></div>
+                <div class="top-right-buttons">
+                    <button id="theme-toggle-btn" class="partner-button" title="切换主题">
+                        <i class="fas fa-sun"></i> 
+                    </button>
+                    <button class="partner-button" id="skill-button"><i class="fas fa-book"></i> 技能<span class="notification-badge"></span></button>
+                    <button class="partner-button" id="inventory-button"><i class="fas fa-briefcase"></i> 背包<span class="notification-badge"></span></button>
+                    <button class="partner-button" id="task-button"><i class="fas fa-tasks"></i> 任务<span class="notification-badge"></span></button>
+                </div>
+            </div>
+            <div id="current-important-characters" class="current-partners-section hidden">
+                <div class="section-header">
+                    <div class="section-title"><i class="fas fa-star"></i> 当前地图重要人物</div>
+                    <div id="character-search-container">
+                        <input type="search" id="character-search-input" placeholder="搜索人物..." class="character-search-input">
+                        <button id="search-toggle-btn" title="搜索人物">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="important-character-buttons" class="partner-button-list"></div>
+            </div>
+            <div id="visual-map-container">
+                <svg id="visual-map" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"></svg>
+                <div class="map-custom-controls">
+                    <button id="zoom-in-btn" title="放大"><i class="fas fa-plus"></i></button>
+                    <button id="zoom-out-btn" title="缩小"><i class="fas fa-minus"></i></button>
+                    <button id="reset-zoom-btn" title="重置视图"><i class="fas fa-expand"></i></button>
+                </div>
+            </div>
+            <div id="external-areas" class="external-areas-section hidden">
+                <div class="section-title"><i class="fas fa-globe-asia"></i> 可前往的外部区域</div>
+                <div id="external-area-buttons" class="external-area-buttons"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="character-modal" class="modal-overlay hidden"><div class="modal-dialog character-modal-dialog"><button class="close-modal-button">&times;</button><h4 id="modal-character-name"></h4><div id="modal-character-description" class="modal-content"></div><div id="modal-interaction-options" class="interaction-options-grid"></div></div></div>
+    <div id="skill-modal" class="modal-overlay hidden"><div class="modal-dialog shop-modal-dialog"><button class="close-modal-button">&times;</button><h4><i class="fas fa-book"></i> 技能</h4><div id="skill-items-container"></div></div></div>
+    <div id="inventory-modal" class="modal-overlay hidden"><div class="modal-dialog inventory-modal-dialog"><button class="close-modal-button">&times;</button><h4><i class="fas fa-briefcase"></i> 背包</h4><div id="inventory-items-container"></div></div></div>
+    <div id="task-modal" class="modal-overlay hidden"><div class="modal-dialog task-modal-dialog"><button class="close-modal-button">&times;</button><h4><i class="fas fa-tasks"></i> 当前任务</h4><div id="task-items-container"></div></div></div>
+    <div id="confirm-modal" class="modal-overlay hidden"><div class="modal-dialog confirm-modal-dialog"><h4>请确认操作</h4><div id="confirm-modal-text" class="modal-content"></div><div class="confirm-modal-buttons"><button id="confirm-modal-cancel-btn" class="interaction-button">取消</button><button id="confirm-modal-confirm-btn" class="interaction-button confirm">确认</button></div></div></div>
+    <div id="alert-modal" class="modal-overlay hidden"><div class="modal-dialog confirm-modal-dialog"><h4>提示</h4><div id="alert-modal-text" class="modal-content"></div><div class="confirm-modal-buttons"><button id="alert-modal-ok-btn" class="interaction-button confirm">好的</button></div></div></div>
+    <div id="main-location-modal" class="modal-overlay hidden"><div class="modal-dialog"><button class="close-modal-button">&times;</button><h4 id="modal-main-loc-name" style="text-align:center;"></h4><div id="modal-main-loc-content" class="modal-content"></div><div id="modal-main-loc-actions" class="modal-actions"></div></div></div>
+    <div id="sub-location-modal" class="modal-overlay hidden"><div class="modal-dialog"><button class="close-modal-button">&times;</button><h4 id="modal-sub-loc-name" style="text-align:center;"></h4><div id="modal-sub-loc-content" class="modal-content"></div><div id="modal-sub-loc-actions" class="modal-actions"></div></div></div>
+    <div id="map-element-modal" class="modal-overlay hidden"><div class="modal-dialog"><button class="close-modal-button">&times;</button><h4 id="modal-element-name" style="text-align:center;"></h4><div id="modal-element-description" class="modal-content"></div><div id="modal-element-interactions" class="interaction-options-grid"></div></div></div>
+
+<script>
+    const DOMManager = {
+        initialized: false,
+    
+        init() {
+            if (this.initialized) {
+                console.log('[MapApp] DOM管理器已初始化，跳过重复执行');
+                return;
+            }
+            this.initialized = true;
+            console.log('[MapApp] DOM管理器开始初始化...');
+            
+            this.initCollapseToggle();
+            this.initThemeToggle();
+            this.initSearchToggle();
+            this.initMapApp();
+        },
+    
+        initCollapseToggle() {
+            const collapseBtn = document.getElementById('collapse-toggle-btn');
+            if (!collapseBtn) {
+                console.warn('[MapApp] 折叠按钮未找到');
+                return;
+            }
+
+            const toggleCollapse = () => {
+                const isCurrentlyCollapsed = document.body.classList.contains('is-collapsed');
+                collapseBtn.setAttribute('aria-expanded', isCurrentlyCollapsed);
+            
+                if (isCurrentlyCollapsed) {
+                    console.log("[MapApp] 用户点击展开小地图");
+                    document.body.classList.remove('is-collapsed');
+                    this.handleExpand();
+                } else {
+                    console.log("[MapApp] 用户点击收起小地图");
+                    document.body.classList.add('is-collapsed');
+                }
+                this.saveCollapseState();
+            };
+
+            collapseBtn.addEventListener('click', toggleCollapse);
+            this.restoreCollapseState();
+        },
+    
+        handleExpand() {
+            const mapInterfaceEl = document.querySelector('.map-interface');
+            if (!mapInterfaceEl) return;
+
+            const isMapAppReady = window.MapApp && window.MapApp.state && window.MapApp.state.mapData;
+            
+            console.log("[MapApp] 展开检查 - MapApp数据就绪:", !!isMapAppReady);
+        
+            if (isMapAppReady) {
+                mapInterfaceEl.classList.add('show');
+                // PanZoom is initialized on first load, but might need resizing if the container was hidden.
+                setTimeout(() => {
+                    if (window.MapApp?.state.panZoomInstance) {
+                        window.MapApp.state.panZoomInstance.resize();
+                        window.MapApp.state.panZoomInstance.center();
+                    } else if (window.MapApp?.initializePanZoomWithRetry) {
+                        // If it wasn't initialized for some reason (e.g. error), try again.
+                        window.MapApp.initializePanZoomWithRetry();
+                    }
+                }, 100);
+            } else {
+                // Data is not ready, the app is likely in its initial loading state.
+                // The loading indicator is handled by MapApp.loadDataAndRender.
+                console.log("[MapApp] 数据尚未就绪，等待自动加载完成。");
+            }
+        },
+    
+        saveCollapseState() {
+            try {
+                localStorage.setItem('mapCollapsed', document.body.classList.contains('is-collapsed'));
+            } catch (e) {
+                console.warn('无法保存折叠状态到 localStorage');
+            }
+        },
+    
+        restoreCollapseState() {
+            try {
+                const isCollapsed = localStorage.getItem('mapCollapsed') === 'true';
+                document.body.classList.toggle('is-collapsed', isCollapsed);
+                console.log(`[MapApp] 页面初始化：恢复状态为 ${isCollapsed ? '收起' : '展开'}`);
+                
+                if (!isCollapsed) {
+                    // If it's expanded by default, call handleExpand to check if content is ready to be shown.
+                    this.handleExpand();
+                }
+            } catch (e) {
+                console.warn('无法从 localStorage 恢复折叠状态。默认展开。');
+                document.body.classList.remove('is-collapsed');
+                this.handleExpand();
+            }
+        },
+
+        initThemeToggle() {
+            const themeToggleButton = document.getElementById('theme-toggle-btn');
+            if (!themeToggleButton) return;
+            const themeIcon = themeToggleButton.querySelector('i');
+            if (!themeIcon) return;
+
+            const sunIconClass = 'fa-sun';
+            const moonIconClass = 'fa-moon';
+
+            const getCurrentTheme = () => localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+
+            const applyTheme = (theme) => {
+                document.documentElement.setAttribute('data-theme', theme);
+                try {
+                    localStorage.setItem('theme', theme);
+                } catch (e) { console.warn('无法保存主题到localStorage'); }
+                themeIcon.classList.toggle(moonIconClass, theme === 'dark');
+                themeIcon.classList.toggle(sunIconClass, theme !== 'dark');
+            };
+
+            themeToggleButton.addEventListener('click', () => applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'));
+
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                if (!localStorage.getItem('theme')) applyTheme(e.matches ? 'dark' : 'light');
+            });
+            applyTheme(getCurrentTheme());
+        },
+
+        initSearchToggle() {
+            const searchToggleBtn = document.getElementById('search-toggle-btn');
+            const searchInput = document.getElementById('character-search-input');
+            const section = document.getElementById('current-important-characters');
+            if (!searchToggleBtn || !searchInput || !section) return;
+
+            const setSearchView = (mode) => {
+                section.classList.toggle('search-mode-full', mode === 'full');
+                section.classList.toggle('search-mode-compact', mode !== 'full');
+            };
+            searchToggleBtn.addEventListener('click', () => { setSearchView('full'); searchInput.focus(); });
+            searchInput.addEventListener('blur', () => { if (searchInput.value.trim() === '') setSearchView('compact'); });
+            setSearchView('compact');
+        },
+    
+        initMapApp() {
+            if (window.MapAppMainInitialized) {
+                console.warn('[MapApp] 主应用脚本已初始化，阻止重复执行。');
+                return;
+            }
+            window.MapAppMainInitialized = true;
+            setTimeout(() => SafeMapAppInitializer.init(), 1000);
+        }
+    };
+
+    window.MapApp = {
+        config: {
+            selectors: {
+                mapInterface: '.map-interface',
+                mapTitle: '#map-title', mapTime: '#map-time', skillBtn: '#skill-button', inventoryBtn: '#inventory-button', taskBtn: '#task-button',
+                importantCharsSection: '#current-important-characters', importantCharsContainer: '#important-character-buttons',
+                characterSearchInput: '#character-search-input', visualMapContainer: '#visual-map-container',
+                visualMap: '#visual-map', externalAreasSection: '#external-areas', externalAreasContainer: '#external-area-buttons',
+                modals: '.modal-overlay', closeModalBtns: '.modal-overlay .close-modal-button'
+            },
+            api: {
+                getData: () => {
+                    if (typeof parent.stMemoryEnhancement?.ext_exportAllTablesAsJson === 'function') {
+                        return parent.stMemoryEnhancement.ext_exportAllTablesAsJson();
+                    }
+                    console.error("无法访问 parent.stMemoryEnhancement.ext_exportAllTablesAsJson");
+                    throw new Error("无法访问记忆插件的API。");
+                },
+                sendCommand: (command) => {
+                    if (typeof triggerSlash === 'function') {
+                        try {
+                            triggerSlash(`/send ${command} || /trigger`);
+                        } catch (e) {
+                            window.MapApp.UI.showAlert(e.toString());
+                        }
+                    } else {
+                        console.warn("`triggerSlash` 未定义，模拟发送指令:", command);
+                        window.MapApp.UI.showAlert(`模拟发送：\n${command}`);
+                    }
+                }
+            },
+            layout: { minRoomSpacing: 25 },
+        },
+        state: {
+            mapData: null, panZoomInstance: null, isDragging: false, touchStartTarget: null, zoomInterval: null,
+            layoutWorker: null
+        },
+        elements: {},
+
+        init() {
+            if (this.initialized) return;
+            this.initialized = true;
+            console.log("MapApp.init() - 核心应用初始化开始。");
+            this.cacheElements(); 
+            this.bindEvents();
+            this.initLayoutWorker();
+            this.loadDataAndRender(); // First load
+            
+            // Set up auto-refresh
+            setInterval(() => this.loadDataAndRender(true), 30000); // Refresh every 30 seconds
+        },
+        initLayoutWorker() {
+            const workerCode = `
+                const applySimpleLayout = (locations, layoutConfig) => {
+                    if (locations.length < 2) return locations;
+                    const minSpacing = layoutConfig.minRoomSpacing;
+                    for (let iter = 0; iter < 30; iter++) {
+                        let moved = false;
+                        for (let i = 0; i < locations.length; i++) {
+                            for (let j = i + 1; j < locations.length; j++) {
+                                const a = locations[i], b = locations[j];
+                                const dx = (a.x + a.width / 2) - (b.x + b.width / 2), dy = (a.y + a.height / 2) - (b.y + b.height / 2);
+                                const combinedHalfW = a.width / 2 + b.width / 2 + minSpacing, combinedHalfH = a.height / 2 + b.height / 2 + minSpacing;
+                                const overlapX = combinedHalfW - Math.abs(dx), overlapY = combinedHalfH - Math.abs(dy);
+                                if (overlapX > 0 && overlapY > 0) {
+                                    moved = true;
+                                    const move = (overlapX < overlapY ? overlapX * (dx > 0 ? 1 : -1) : overlapY * (dy > 0 ? 1 : -1)) / 2;
+                                    if (overlapX < overlapY) { a.x += move; b.x -= move; } else { a.y += move; b.y -= move; }
+                                }
+                            }
+                        }
+                        if (!moved) break;
+                    }
+                    return locations;
+                };
+
+            self.onmessage = function(e) {
+                const { locations, layoutConfig } = e.data;
+                const calculatedLocations = applySimpleLayout(locations, layoutConfig);
+                self.postMessage(calculatedLocations);
+            };
+            `;
+            const blob = new Blob([workerCode], { type: 'application/javascript' });
+            this.state.layoutWorker = new Worker(URL.createObjectURL(blob));
+        },
+        cacheElements() {
+            for (const key in this.config.selectors) { this.elements[key] = document.querySelector(this.config.selectors[key]); }
+            this.elements.allModals = document.querySelectorAll(this.config.selectors.modals);
+        },
+        showRetryButton(errorMessage) {
+            const mapWrapper = document.querySelector('.map-wrapper');
+            const mapInterface = document.querySelector('.map-interface');
+            const container = this.elements.visualMapContainer;
+            
+            if(mapWrapper) mapWrapper.classList.remove('is-loading');
+            if (mapInterface) mapInterface.classList.add('show');
+            if (!container) return;
+            
+            container.innerHTML = `
+                <div style="text-align: center; color: var(--c-text-secondary); padding: 20px; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%;">
+                    <p style="font-weight: bold;">加载失败</p>
+                    <p style="font-size: 0.9em; max-width: 80%; margin: 10px auto;">${errorMessage || '未知错误'}</p>
+                    <button class="interaction-button" onclick="window.MapApp.loadDataAndRender()" style="margin-top: 15px;">点击重试</button>
+                </div>
+            `;
+        },
+        async loadDataAndRender(isSilent = false) {
+            console.log(`[MapApp] 开始加载和渲染数据... (静默: ${isSilent})`);
+            const mapWrapper = document.querySelector('.map-wrapper');
+
+            if (!isSilent && mapWrapper) {
+                mapWrapper.classList.add('is-loading');
+            }
+
+            try {
+                const rawData = await this.config.api.getData();
+                if (!rawData || typeof rawData !== 'object' || Object.keys(rawData).length === 0) {
+                    throw new Error("获取到的远端数据无效或为空。");
+                }
+                
+                this.state.mapData = this.DataProcessor.process(rawData);
+                console.log('[MapApp] 数据处理完成，准备渲染...');
+                this.render(isSilent);
+                console.log('[MapApp] 核心渲染完成。');
+
+                const isCollapsed = document.body.classList.contains('is-collapsed');
+                const mapInterfaceEl = document.querySelector('.map-interface');
+                if (mapInterfaceEl && !isCollapsed) {
+                    mapInterfaceEl.classList.add('show');
+                }
+
+            } catch (error) {
+                console.error("MapApp: 加载或渲染数据时失败:", error);
+                this.showRetryButton(error.message);
+            } finally {
+                if (!isSilent && mapWrapper) {
+                    mapWrapper.classList.remove('is-loading');
+                }
+            }
+        },
+        render(isSilent = false) {
+            if (!this.state.mapData) return;
+            
+            if (!isSilent && this.state.panZoomInstance) {
+                this.state.panZoomInstance.destroy();
+                this.state.panZoomInstance = null;
+            }
+
+            this.Renderer.renderHeader(this.state.mapData, this.elements);
+            this.elements.characterSearchInput.value = '';
+            this.Renderer.renderImportantCharacters(this.state.mapData, this.elements, '');
+            this.Renderer.renderExternalAreas(this.state.mapData, this.elements);
+            this.Renderer.renderMap(this.state.mapData, this.elements.visualMap, this.config, isSilent);
+        },
+        initializePanZoomWithRetry(retryCount = 0) {
+            const maxRetries = 5, container = this.elements.visualMapContainer;
+            if (!container) return;
+            if (document.body.classList.contains('is-collapsed') && !this.state.mapData) return;
+            if (container.offsetWidth === 0 || container.offsetHeight === 0) {
+                if (retryCount < maxRetries) setTimeout(() => this.initializePanZoomWithRetry(retryCount + 1), 200);
+                return;
+            }
+            if (typeof svgPanZoom === 'undefined') {
+                if (retryCount < maxRetries) setTimeout(() => this.initializePanZoomWithRetry(retryCount + 1), 500);
+                else this.UI.showAlert('地图交互库加载失败。');
+                return;
+            }
+            this.doInitializePanZoom();
+        },
+        doInitializePanZoom() {
+            const svg = this.elements.visualMap;
+            if (this.state.panZoomInstance) this.state.panZoomInstance.destroy();
+            try {
+                this.state.panZoomInstance = svgPanZoom(svg, {
+                    panEnabled: true, zoomEnabled: true, pinchZoomEnabled: true, controlIconsEnabled: false,
+                    dblClickZoomEnabled: false, zoomScaleSensitivity: 0.2, refreshRate: 'auto',
+                    contain: false, center: true, minZoom: 0.3, maxZoom: 8,
+                    beforePan: function() {
+                        // 在触摸事件处理期间，通过 window.event 访问事件对象。
+                        // 如果检测到多于一个触摸点（例如双指缩放），则返回 false 来取消平移操作，
+                        // 从而优先处理缩放手势。
+                        if (window.event && window.event.touches && window.event.touches.length > 1) {
+                            return false;
+                        }
+                        // 对于其他情况（包括鼠标拖动），不返回任何内容以允许平移
+                    },
+                    onPan: () => { this.state.isDragging = true; },
+                    onReady: (pz) => setTimeout(() => { try { pz.fit(); pz.center(); } catch (e) {} }, 50),
+                });
+                this.bindMapContainerEvents(this.elements.visualMapContainer);
+            } catch (error) { console.error('[MapApp] panZoom 初始化异常:', error); }
+        },
+        bindMapContainerEvents(container) {
+            const searchInput = this.elements.characterSearchInput;
+            const blurSearch = () => { if (document.activeElement === searchInput) searchInput.blur(); };
+            container.addEventListener('touchstart', blurSearch, { passive: true });
+            container.addEventListener('mousedown', () => { blurSearch(); container.classList.add('is-dragging');});
+            window.addEventListener('mouseup', () => container.classList.remove('is-dragging'), { once: true });
+        },
+        bindEvents() {
+            document.addEventListener('click', (event) => {
+                const target = event.target, closest = (s) => target.closest(s);
+                if (closest('.close-modal-button')) this.UI.closeModal(closest('.modal-overlay').id);
+                else if (closest('#alert-modal-ok-btn')) this.UI.closeModal('alert-modal');
+                else if (closest('#confirm-modal-cancel-btn')) this.UI.closeModal('confirm-modal');
+                else if (closest('#reset-zoom-btn') && this.state.panZoomInstance) { this.state.panZoomInstance.fit(); this.state.panZoomInstance.center(); }
+                else if (closest('#skill-button')) this.UI.openSkillModal();
+                else if (closest('#inventory-button')) this.UI.openInventoryModal();
+                else if (closest('#task-button')) this.UI.openTaskModal();
+            });
+            this.elements.allModals.forEach(m => m.addEventListener('click', (e) => { if (e.target === m) this.UI.closeModal(m.id); }));
+            this.elements.characterSearchInput.addEventListener('input', (e) => this.Renderer.renderImportantCharacters(this.state.mapData, this.elements, e.target.value));
+
+            const zoomInBtn = document.getElementById('zoom-in-btn');
+            const zoomOutBtn = document.getElementById('zoom-out-btn');
+
+            const startZoom = (zoomFn) => {
+                if (this.state.zoomInterval) clearInterval(this.state.zoomInterval);
+                if(this.state.panZoomInstance) {
+                    zoomFn(); // Immediately zoom once
+                    this.state.zoomInterval = setInterval(zoomFn, 100);
+                }
+            };
+
+            const stopZoom = () => {
+                if (this.state.zoomInterval) {
+                    clearInterval(this.state.zoomInterval);
+                    this.state.zoomInterval = null;
+                }
+            };
+
+            if(zoomInBtn) {
+                zoomInBtn.addEventListener('mousedown', () => startZoom(() => this.state.panZoomInstance.zoomIn()));
+                zoomInBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startZoom(() => this.state.panZoomInstance.zoomIn()); });
+            }
+            if(zoomOutBtn) {
+                zoomOutBtn.addEventListener('mousedown', () => startZoom(() => this.state.panZoomInstance.zoomOut()));
+                zoomOutBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startZoom(() => this.state.panZoomInstance.zoomOut()); });
+            }
+            
+            const stopZoomEvents = ['mouseup', 'mouseleave', 'touchend'];
+            stopZoomEvents.forEach(event => {
+                if(zoomInBtn) zoomInBtn.addEventListener(event, stopZoom);
+                if(zoomOutBtn) zoomOutBtn.addEventListener(event, stopZoom);
+            });
+            
+            const handleMapClick = (locGroup) => {
+                if (!locGroup) return;
+                const locData = this.state.mapData.locations.find(loc => loc.name === locGroup.dataset.locationName);
+                if (locData) this.UI.openMainLocationModal(locData);
+            };
+            
+            this.elements.visualMap.addEventListener('mousedown', () => {
+                // isDragging is now managed by the click/touchend handlers to prevent race conditions.
+            });
+            this.elements.visualMap.addEventListener('touchstart', (e) => {
+                this.state.touchStartTarget = e.target;
+                // isDragging is now managed by the click/touchend handlers.
+            }, { passive: true });
+
+            this.elements.visualMap.addEventListener('click', (e) => {
+                if (!this.state.isDragging) {
+                    handleMapClick(e.target.closest('.map-location-group'));
+                }
+                this.state.isDragging = false;
+            });
+
+            this.elements.visualMap.addEventListener('touchend', (e) => {
+                if (!this.state.isDragging) {
+                    const targetGroup = this.state.touchStartTarget?.closest('.map-location-group');
+                    handleMapClick(targetGroup);
+                }
+                this.state.isDragging = false;
+                this.state.touchStartTarget = null;
+            });
+        },
+        DataProcessor: {
+            process(json) {
+                const tablesByName = {};
+                if (!json || typeof json !== 'object') { throw new Error("无效的JSON数据。"); }
+                for (const sheetId in json) { if (json[sheetId]?.name) tablesByName[json[sheetId].name] = json[sheetId]; }
+                
+                const data = { title: '', time: '', locations: [], importantCharacters: [], externalAreas: [], skills: [], inventory: [], tasks: [], protagonist: {}, protagonistLocationName: '', protagonistCanMove: true};
+                
+                const globalTable = tablesByName['全局数据表']?.content || [];
+                if (globalTable.length > 1 && globalTable[1]) {
+                    const [ , title, time, areas ] = globalTable[1];
+                    data.title = title || '未知地图';
+                    data.time = time || '未知时间';
+                    data.externalAreas = (areas || '').split(';').map(s => s.trim()).filter(Boolean);
+                }
+
+                const pInfoTable = tablesByName['主角信息']?.content || [];
+                const pStatusTable = tablesByName['主角状态']?.content || [];
+                const pData = { isProtagonist: true, name: '主角', details: { attributes: {} }, interactions: [] };
+                if (pInfoTable.length > 1 && pInfoTable[1]) Object.assign(pData, { name: pInfoTable[1][1], details: { genderAge:pInfoTable[1][2], appearance:pInfoTable[1][3], profession:pInfoTable[1][4], backstory:pInfoTable[1][5], personality:pInfoTable[1][6] }});
+                if (pStatusTable.length > 1 && pStatusTable[1]) {
+                    const [ , status, canMove, money, location, , p6,p7,p8,p9,p10,p11, ...interactions ] = pStatusTable[1];
+                    Object.assign(pData.details, { status, money: money || '0', attributes: {'力量':p6,'智力':p7,'敏捷':p8,'体质':p9,'魅力':p10,'感知':p11} });
+                    data.protagonistCanMove = !(String(canMove).trim().toLowerCase() === '否');
+                    pData.currentLocationName = location || '';
+                    pData.interactions = interactions.filter(Boolean);
+                }
+                data.protagonist = pData;
+                data.importantCharacters.push(pData);
+                
+                (tablesByName['重要人物表']?.content || []).slice(1).forEach(r => {
+                    if (!r || !r[1]) return;
+                    const [ , name, genderAge, appearance, profession, personality, backstory, relationship, status, items, abilities, affinity, thoughts, ...interactions ] = r;
+                    data.importantCharacters.push({ name, genderAge, appearance, profession, personality, backstory, relationship, status, items, abilities, affinity, thoughts, interactions: interactions.slice(0, 4).filter(Boolean), isAway: r[17] === 'true', awayTurns: r[18], isPlotCritical: r[19], avatar: r[20]});
+                });
+
+                (tablesByName['主角技能表']?.content || []).slice(1).forEach(r => r?.[1] && data.skills.push({ name: r[1], effect: r[2], level: r[3], mastery: r[4] }));
+                (tablesByName['背包物品表']?.content || []).slice(1).forEach(r => r?.[1] && data.inventory.push({ name: r[1], quantity: r[2], description: r[3], isNew: r[4] === 'true' }));
+                (tablesByName['任务与事件表']?.content || []).slice(1).forEach(r => r?.[1] && data.tasks.push({ name: r[1], description: r[2], progress: r[5], isUpdated: r[6] === 'true' }));
+
+                const subLocs = {};
+                (tablesByName['次级地点表']?.content || []).slice(1).forEach(r => { if(r?.[2] && r?.[1]) { if(!subLocs[r[2]]) subLocs[r[2]] = []; subLocs[r[2]].push({ name: r[1], description: r[3], elements: [] }); }});
+                
+                (tablesByName['地图元素表']?.content || []).slice(1).forEach(r => {
+                    if(!r?.[1] || !r?.[4]) return;
+                    for (const mainLocName in subLocs) {
+                        const sub = subLocs[mainLocName].find(i => i.name === r[4]);
+                        if (sub) {
+                            sub.elements.push({ name: r[1], type: r[2], description: r[3], interactions: [r[7], r[8], r[9], r[10]].filter(Boolean) });
+                            break;
+                        }
+                    }
+                });
+
+                (tablesByName['主要地点表']?.content || []).slice(1).forEach(r => {
+                    if(!r?.[1]) return;
+                    const [x, y, w, h] = [r[2], r[3], r[4], r[5]].map(v => parseInt(v));
+                    if([x, y, w, h].every(v => !isNaN(v))) {
+                        data.locations.push({ name: r[1], x, y, width: w, height: h, type: r[6], description: r[7], subLocations: subLocs[r[1]] || [] });
+                    }
+                });
+
+                data.protagonistLocationName = pData.currentLocationName || (data.locations[0]?.name || '');
+                return data;
+            }
+        },
+        Renderer: {
+            renderHeader(data, elements) {
+                elements.mapTitle.textContent = data.title;
+                elements.mapTime.textContent = data.time;
+            },
+            renderMap(data, svgElement, config, isSilent = false) {
+                if (!data.locations || data.locations.length === 0) {
+                    svgElement.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="currentColor" style="font-family: var(--font-ui);">没有地点数据</text>';
+                    svgElement.setAttribute('viewBox', '0 0 800 600');
+                    return;
+                }
+
+                this.applySimpleLayout(JSON.parse(JSON.stringify(data.locations)), config.layout)
+                    .then(locations => {
+                        const ns = "http://www.w3.org/2000/svg";
+                        const bounds = this.calculateBounds(locations);
+                        const padding = Math.max(bounds.width, bounds.height) * 0.1;
+                        svgElement.setAttribute('viewBox', `${bounds.x - padding} ${bounds.y - padding} ${bounds.width + padding*2} ${bounds.height + padding*2}`);
+                
+                        if (!svgElement.querySelector('defs')) {
+                            const defs = this.createSVGElement(ns, 'defs', {});
+                            defs.innerHTML = `<linearGradient id="locationGradient" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" class="gradient-stop-1"/><stop offset="100%" class="gradient-stop-2"/></linearGradient>`;
+                            svgElement.prepend(defs);
+                        }
+                
+                        const existingElements = new Map();
+                        svgElement.querySelectorAll('.map-location-group').forEach(el => {
+                            existingElements.set(el.dataset.locationName, el);
+                        });
+                
+                        const locationsToUpdate = locations;
+                        const CHUNK_SIZE = 8; // 每帧更新的元素数量
+                        let currentIndex = 0;
+                
+                        const updateChunkByFrame = () => {
+                            const chunk = locationsToUpdate.slice(currentIndex, currentIndex + CHUNK_SIZE);
+                            
+                            chunk.forEach(loc => {
+                                const existingEl = existingElements.get(loc.name);
+                                if (existingEl) {
+                                    this.updateMapLocation(existingEl, loc, data.protagonistLocationName);
+                                    existingElements.delete(loc.name);
+                                } else {
+                                    const newEl = this.createMapLocation(loc, data.protagonistLocationName, ns);
+                                    svgElement.appendChild(newEl);
+                                }
+                            });
+                
+                            currentIndex += CHUNK_SIZE;
+                
+                            if (currentIndex < locationsToUpdate.length) {
+                                requestAnimationFrame(updateChunkByFrame);
+                            } else {
+                                existingElements.forEach(el => el.remove());
+                                console.log("所有地点分帧更新完成。");
+                                if (!isSilent && window.MapApp?.initializePanZoomWithRetry) {
+                                    window.MapApp.initializePanZoomWithRetry();
+                                } else if (isSilent && window.MapApp?.state.panZoomInstance) {
+                                    window.MapApp.state.panZoomInstance.updateBBox();
+                                }
+                            }
+                        };
+                        
+                        requestAnimationFrame(updateChunkByFrame);
+                    })
+                    .catch(error => {
+                        console.error("Layout calculation failed:", error);
+                        svgElement.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="red">布局计算失败</text>';
+                    });
+            },
+            applySimpleLayout(locations, layoutConfig) {
+                return new Promise((resolve, reject) => {
+                    const worker = window.MapApp.state.layoutWorker;
+                    if (!worker) {
+                        return reject(new Error("Layout worker not initialized."));
+                    }
+
+                    worker.onmessage = (e) => {
+                        resolve(e.data);
+                    };
+
+                    worker.onerror = (e) => {
+                        reject(new Error(`Layout Worker Error: ${e.message}`));
+                    };
+
+                    worker.postMessage({ locations, layoutConfig });
+                });
+            },
+            calculateBounds(locations) {
+                if (!locations.length) return { x: 0, y: 0, width: 800, height: 600 };
+                const xCoords = locations.flatMap(l => [l.x, l.x + l.width]);
+                const yCoords = locations.flatMap(l => [l.y, l.y + l.height]);
+                const minX = Math.min(...xCoords), maxX = Math.max(...xCoords);
+                const minY = Math.min(...yCoords), maxY = Math.max(...yCoords);
+                return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+            },
+            updateMapLocation(g, loc, protagonistLocationName) {
+                g.classList.toggle('is-current-location', loc.name === protagonistLocationName);
+                g.style.setProperty('--room-area', `${loc.width * loc.height}`);
+                
+                const rect = g.querySelector('.map-location-rect');
+                rect.setAttribute('x', loc.x);
+                rect.setAttribute('y', loc.y);
+                rect.setAttribute('width', loc.width);
+                rect.setAttribute('height', loc.height);
+                rect.setAttribute('rx', Math.min(loc.width, loc.height) * 0.1);
+            
+                const label = g.querySelector('.map-location-label');
+                label.setAttribute('x', loc.x + loc.width / 2);
+                label.setAttribute('y', loc.y + loc.height / 2);
+                if (label.textContent !== loc.name) {
+                    label.textContent = loc.name;
+                }
+            
+            },
+            createMapLocation(loc, protagonistLocationName, ns) {
+                const g = this.createSVGElement(ns, 'g', { 'class': 'map-location-group', 'data-location-name': loc.name });
+                const rect = this.createSVGElement(ns, 'rect', { 'class': 'map-location-rect' });
+                const label = this.createSVGElement(ns, 'text', { 'class': 'map-location-label' });
+                g.append(rect, label);
+                this.updateMapLocation(g, loc, protagonistLocationName);
+                return g;
+            },
+            renderImportantCharacters(data, elements, filterText = '') {
+                const container = elements.importantCharsContainer, section = elements.importantCharsSection, fragment = document.createDocumentFragment();
+                const lowerFilter = filterText.toLowerCase();
+                const contactableChars = data.importantCharacters.filter(c => !c.isAway || c.isProtagonist);
+                const charsToRender = filterText ? contactableChars.filter(c => c.name.toLowerCase().includes(lowerFilter)) : contactableChars;
+                
+                if (charsToRender.length > 0) {
+                    charsToRender.forEach(char => {
+                        const btn = document.createElement('button');
+                        btn.className = 'partner-button';
+                        btn.onclick = () => window.MapApp.UI.openCharacterModal(char);
+                        const avatar = char.avatar && char.avatar.startsWith('http') ? `<img src="${char.avatar}" class="avatar" alt="${char.name}" onerror="this.style.display='none'; this.nextSibling.style.display='flex';"> <div class="avatar avatar-fallback" style="display:none;">${char.name.substring(0, 1)}</div>` : `<div class="avatar avatar-fallback">${char.name.substring(0, 1)}</div>`;
+                        btn.innerHTML = `${avatar}<span>${char.name}</span>`; 
+                        fragment.appendChild(btn);
+                    });
+                } else if (filterText) {
+                    const p = document.createElement('p'); p.style.cssText = 'color: var(--c-text-secondary); width: 100%; text-align: center;'; p.textContent = '未找到人物'; fragment.appendChild(p);
+                }
+                container.replaceChildren(fragment);
+                section.classList.toggle('hidden', contactableChars.length === 0);
+                window.MapApp.UI.staggeredEntrance('#important-character-buttons', '.partner-button');
+            },
+            renderExternalAreas(data, elements) {
+                const container = elements.externalAreasContainer, section = elements.externalAreasSection, fragment = document.createDocumentFragment();
+                if (data.externalAreas.length > 0) {
+                    data.externalAreas.forEach(area => {
+                        const btn = document.createElement('button'); btn.className = 'external-area-button';
+                        btn.innerHTML = `<i class="fas fa-globe-asia"></i> ${area}`;
+                        btn.onclick = (e) => window.MapApp.Actions.travelTo(area, e);
+                        fragment.appendChild(btn);
+                    });
+                    section.classList.remove('hidden');
+                } else { section.classList.add('hidden'); }
+                container.replaceChildren(fragment);
+            },
+            createSVGElement: (ns, tag, attrs) => { const el = document.createElementNS(ns, tag); for(let k in attrs) el.setAttribute(k, attrs[k]); return el; },
+        },
+        UI: {
+            openModal(modalId) {
+                const modal = document.getElementById(modalId);
+                if (!modal) {
+                    console.error(`[MapApp] 尝试打开一个不存在的弹窗: #${modalId}`);
+                    return;
+                }
+                const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+                document.body.style.setProperty('--scrollbar-width', `${scrollbarWidth}px`);
+                document.body.classList.add('modal-open');
+                
+                modal.classList.remove('hidden');
+            },
+            closeModal(modalId) {
+                const modal = document.getElementById(modalId);
+                if (!modal) {
+                    console.error(`[MapApp] 尝试关闭一个不存在的弹窗: #${modalId}`);
+                    return;
+                }
+                modal.classList.add('hidden');
+                if (!document.querySelector('.modal-overlay:not(.hidden)')) {
+                    document.body.classList.remove('modal-open');
+                    document.body.style.removeProperty('--scrollbar-width');
+                }
+            },
+            showAlert(message) {
+                const textElement = document.getElementById('alert-modal-text');
+                if (textElement) {
+                    textElement.textContent = message;
+                    this.openModal('alert-modal');
+                }
+            },
+            showConfirm(actionText, onConfirm) {
+                const modal = document.getElementById('confirm-modal');
+                if (!modal) return;
+                
+                modal.querySelector('#confirm-modal-text').innerHTML = `<span style="display: block; margin-bottom: 8px;">您是否要执行以下操作？</span><strong style="color: var(--c-accent-primary);">${actionText}</strong>`;
+                
+                const confirmBtn = modal.querySelector('#confirm-modal-confirm-btn');
+                const newBtn = confirmBtn.cloneNode(true);
+                confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+                
+                newBtn.onclick = () => {
+                    this.closeModal('confirm-modal');
+                    if (typeof onConfirm === 'function') {
+                        onConfirm();
+                    }
+                };
+                this.openModal('confirm-modal');
+            },
+            staggeredEntrance(containerSel, itemSel) {
+                const container = document.querySelector(containerSel);
+                if (!container) return;
+
+                const items = container.querySelectorAll(itemSel);
+                items.forEach((item, index) => {
+                    // ✨ 优化：先清除旧的动画类和样式，确保每次都是干净的开始
+                    item.classList.remove('list-item-enter', 'list-item-enter-active');
+                    item.style.transitionDelay = '';
+
+                    // 应用新的入场动画
+                    requestAnimationFrame(() => {
+                        item.classList.add('list-item-enter');
+                        requestAnimationFrame(() => {
+                            setTimeout(() => {
+                                item.style.transitionDelay = `${index * 50}ms`;
+                                item.classList.add('list-item-enter-active');
+                            }, 20);
+                        });
+                    });
+                });
+            },
+
+            createItemListModal(modalId, containerId, items, emptyText, itemClass, itemFactory) {
+                this.openModal(modalId);
+                const container = document.getElementById(containerId);
+                const fragment = this.createItemList(items, emptyText, itemClass, itemFactory);
+                container.replaceChildren(fragment);
+                this.staggeredEntrance(`#${containerId}`, `.${itemClass}`);
+            },
+
+            openSkillModal() {
+                this.createItemListModal(
+                    'skill-modal',
+                    'skill-items-container',
+                    window.MapApp.state.mapData?.skills,
+                    '无技能',
+                    'skill-item',
+                    (skill) => ({
+                        html: `<div><strong>${skill.name} (Lv.${skill.level})</strong><br><small>${skill.effect}</small></div>`,
+                        action: (e) => window.MapApp.Actions.useSkill(skill.name, e)
+                    })
+                );
+            },
+
+            openInventoryModal() {
+                this.createItemListModal(
+                    'inventory-modal',
+                    'inventory-items-container',
+                    window.MapApp.state.mapData?.inventory,
+                    '背包为空',
+                    'inventory-item',
+                    (item) => ({
+                        html: `<div><strong>${item.name} (×${item.quantity})</strong><br><small>${item.description}</small></div>`,
+                        action: (e) => window.MapApp.Actions.useItem(item.name, e)
+                    })
+                );
+            },
+
+            createItemList(items, emptyText, itemClass, itemFactory) {
+                const fragment = document.createDocumentFragment();
+                if (!items || items.length === 0) {
+                    const p = document.createElement('p');
+                    p.className = 'modal-empty-state';
+                    p.textContent = emptyText;
+                    fragment.appendChild(p);
+                } else {
+                    items.forEach(item => {
+                        const itemData = itemFactory(item);
+                        const div = document.createElement('div');
+                        
+                        div.className = itemClass; 
+                        if (item.isNew) {
+                            div.classList.add('new-item');
+                        }
+
+                        if (itemData.action) {
+                           div.innerHTML = `${itemData.html}<button class="use-button">使用</button>`;
+                           div.querySelector('.use-button').onclick = itemData.action;
+                        } else {
+                           div.innerHTML = itemData.html;
+                        }
+                        
+                        fragment.appendChild(div);
+                    });
+                }
+                return fragment;
+            },
+            
+            openTaskModal() {
+                this.openModal('task-modal');
+                const container = document.getElementById('task-items-container');
+                const tasks = window.MapApp.state.mapData?.tasks || [];
+                if (tasks.length === 0) {
+                    const p = document.createElement('p');
+                    p.className = 'modal-empty-state';
+                    p.textContent = '没有进行中的任务';
+                    container.replaceChildren(p);
+                } else {
+                    const fragment = document.createDocumentFragment();
+                    tasks.forEach(task => {
+                        const item = document.createElement('div');
+                        item.className = 'task-item';
+                        item.innerHTML = `<div class="task-item-header">${task.name}</div><div class="task-item-details"><p>描述: ${task.description}</p><p>进度: ${task.progress}</p></div>`;
+                        fragment.appendChild(item);
+                    });
+                    container.replaceChildren(fragment);
+                }
+                this.staggeredEntrance('#task-items-container', '.task-item');
+            },
+            openCharacterModal(char) {
+                this.openModal('character-modal');
+                const modal = document.getElementById('character-modal'),
+                    nameEl = modal.querySelector('#modal-character-name'),
+                    descEl = modal.querySelector('#modal-character-description'),
+                    interactEl = modal.querySelector('#modal-interaction-options');
+                nameEl.textContent = char.name;
+                const details = char.isProtagonist ? [{
+                    l: '属性',
+                    v: char.details.attributes,
+                    t: 'grid'
+                }, {
+                    l: '性别/年龄',
+                    v: char.details.genderAge
+                }, {
+                    l: '外貌',
+                    v: char.details.appearance
+                }, {
+                    l: '职业',
+                    v: char.details.profession
+                }, {
+                    l: '背景',
+                    v: char.details.backstory
+                }, {
+                    l: '性格',
+                    v: char.details.personality
+                }, {
+                    l: '状态',
+                    v: char.details.status
+                }] : [{
+                    l: '性别/年龄',
+                    v: char.genderAge
+                }, {
+                    l: '外貌',
+                    v: char.appearance
+                }, {
+                    l: '职业',
+                    v: char.profession
+                }, {
+                    l: '性格',
+                    v: char.personality
+                }, {
+                    l: '背景',
+                    v: char.backstory
+                }, {
+                    l: '关系',
+                    v: char.relationship
+                }, {
+                    l: '状态',
+                    v: char.status
+                }, {
+                    l: '好感度',
+                    v: char.affinity
+                }];
+                const descFrag = document.createDocumentFragment();
+                details.forEach(d => {
+                    if (!d.v) return;
+                    if (d.t === 'grid') {
+                        const grid = document.createElement('div');
+                        grid.className = 'attributes-grid';
+                        for (const key in d.v)
+                            if (d.v[key]) {
+                                const item = document.createElement('div');
+                                item.className = 'attribute-item';
+                                item.innerHTML = `<div class="attribute-item-label">${key}</div><div class="attribute-item-value">${d.v[key]}</div>`;
+                                grid.appendChild(item);
+                            } descFrag.appendChild(grid);
+                    } else {
+                        const p = document.createElement('p');
+                        p.innerHTML = `<strong>${d.l}:</strong> ${d.v}`;
+                        descFrag.appendChild(p);
+                    }
+                });
+                descEl.replaceChildren(descFrag);
+                const interactFrag = document.createDocumentFragment();
+                if (char.interactions?.length > 0) char.interactions.forEach(text => {
+                    const btn = document.createElement('button');
+                    btn.className = 'interaction-button';
+                    btn.textContent = text;
+                    btn.onclick = (e) => {
+                        this.closeModal('character-modal');
+                        window.MapApp.Actions.interactWith(char.name, text, e);
+                    };
+                    interactFrag.appendChild(btn);
+                });
+                else {
+                    const p = document.createElement('p');
+                    p.style.cssText = 'text-align:center;color:var(--c-text-secondary);';
+                    p.textContent = '无可用互动';
+                    interactFrag.appendChild(p);
+                }
+                interactEl.replaceChildren(interactFrag);
+                this.staggeredEntrance('#modal-interaction-options', '.interaction-button');
+            },
+            openMainLocationModal(loc) {
+                const nameEl = document.getElementById('modal-main-loc-name'),
+                    contentEl = document.getElementById('modal-main-loc-content'),
+                    actionsEl = document.getElementById('modal-main-loc-actions');
+                nameEl.textContent = loc.name;
+                contentEl.innerHTML = `<p style="text-align:center; color: var(--c-text-secondary);">${loc.description || '无描述'}</p>`;
+                actionsEl.innerHTML = '';
+                if (loc.name !== window.MapApp.state.mapData.protagonistLocationName) {
+                    const btn = document.createElement('button');
+                    btn.className = 'interaction-button';
+                    btn.textContent = '移动到这里';
+                    btn.onclick = (e) => {
+                        this.closeModal('main-location-modal');
+                        window.MapApp.Actions.travelTo(loc.name, e);
+                    };
+                    actionsEl.appendChild(btn);
+                }
+                if (loc.subLocations?.length > 0) {
+                    const title = document.createElement('h5');
+                    title.className = 'modal-section-title';
+                    title.textContent = '可探索区域';
+                    contentEl.appendChild(title);
+                    const grid = document.createElement('div');
+                    grid.className = 'sub-location-grid';
+                    loc.subLocations.forEach(sub => {
+                        const btn = document.createElement('button');
+                        btn.className = 'sub-location-button';
+                        btn.textContent = sub.name;
+                        btn.onclick = () => {
+                            this.closeModal('main-location-modal');
+                            this.openSubLocationModal(sub);
+                        };
+                        grid.appendChild(btn);
+                    });
+                    contentEl.appendChild(grid);
+                }
+                this.openModal('main-location-modal');
+            },
+            openSubLocationModal(subLoc) {
+                this.openModal('sub-location-modal');
+                const nameEl = document.getElementById('modal-sub-loc-name'),
+                    contentEl = document.getElementById('modal-sub-loc-content');
+                nameEl.textContent = subLoc.name;
+                contentEl.innerHTML = `<p style="text-align:center; color: var(--c-text-secondary);">${subLoc.description || '无描述'}</p>`;
+                if (subLoc.elements?.length > 0) {
+                    const title = document.createElement('h5');
+                    title.className = 'modal-section-title';
+                    title.textContent = '可互动元素';
+                    contentEl.appendChild(title);
+                    const grid = document.createElement('div');
+                    grid.className = 'sub-location-grid';
+                    subLoc.elements.forEach(el => {
+                        const btn = document.createElement('button');
+                        btn.className = 'sub-location-button';
+                        btn.textContent = el.name;
+                        btn.onclick = () => {
+                            this.closeModal('sub-location-modal');
+                            this.openMapElementModal(el);
+                        };
+                        grid.appendChild(btn);
+                    });
+                    contentEl.appendChild(grid);
+                }
+            },
+            openMapElementModal(element) {
+                this.openModal('map-element-modal');
+                const nameEl = document.getElementById('modal-element-name'),
+                    descEl = document.getElementById('modal-element-description'),
+                    interactEl = document.getElementById('modal-element-interactions');
+                nameEl.textContent = element.name;
+                descEl.innerHTML = `<p>${element.description || '一个普通的物件。'}</p>`;
+                interactEl.innerHTML = '';
+                if (element.interactions?.length > 0) {
+                    const frag = document.createDocumentFragment();
+                    element.interactions.forEach(text => {
+                        const btn = document.createElement('button');
+                        btn.className = 'interaction-button';
+                        btn.textContent = text;
+                        btn.onclick = (e) => {
+                            this.closeModal('map-element-modal');
+                            window.MapApp.Actions.interactWith(element.name, text, e);
+                        };
+                        frag.appendChild(btn);
+                    });
+                    interactEl.appendChild(frag);
+                } else {
+                    interactEl.innerHTML = '<p style="text-align:center; color: var(--c-text-secondary);">无可用互动</p>';
+                }
+            },
+        },
+
+        Actions: {
+            sendRequest(actionText, command, event) {
+                const btn = event?.target.closest('button');
+                window.MapApp.UI.showConfirm(actionText, () => {
+                    if (btn) { btn.classList.add('is-loading'); btn.disabled = true; }
+                    window.MapApp.config.api.sendCommand(command);
+                });
+            },
+            travelTo(loc, e) { this.sendRequest(`移动到 ${loc}`, `<request:{{user}}移动到${loc}>`, e); },
+            useSkill(skill, e) { this.sendRequest(`使用技能: ${skill}`, `<request:{{user}}使用技能${skill}>`, e); },
+            useItem(item, e) { this.sendRequest(`使用物品: ${item}`, `<request:{{user}}使用物品${item}>`, e); },
+            interactWith(target, action, e) { this.sendRequest(`对 ${target} 执行: ${action}`, `<request:{{user}}对${target}执行互动:${action}>`, e); }
+        }
+    };
+    
+
+
+
+
+    
+    /**
+     * =========================================================================
+     * 安全初始化器
+     * =========================================================================
+     */
+const SafeMapAppInitializer = {
+    initialized: false,
+    checkInterval: null,
+    checkCount: 0,
+    maxChecks: 10, // Increase checks for slower loading APIs
+
+    init() {
+        console.log('[MapApp] 安全初始化器启动');
+        
+        const startChecking = () => {
+            if (this.checkInterval) clearInterval(this.checkInterval);
+            this.checkAndInit();
+            this.checkInterval = setInterval(() => this.checkAndInit(), 3000); // Check every 3s
+        };
+
+        if (!window.MapAppLibrariesReady) {
+            window.addEventListener('mapAppLibrariesReady', () => {
+                console.log('[MapApp] 依赖库已就绪，开始检查初始化条件');
+                startChecking();
+            }, { once: true });
+            
+            setTimeout(() => {
+                if (!this.initialized) {
+                    console.log('[MapApp] 库加载超时，强制开始检查');
+                    startChecking();
+                }
+            }, 5000);
+        } else {
+            startChecking();
+        }
+    },
+    
+    checkAndInit() {
+        if (this.initialized) {
+            this.stopChecking();
+            return;
+        }
+
+        if (this.isWelcomePage()) {
+            console.log('[MapApp] 检测到欢迎页面，隐藏地图。');
+            const pageCollapser = document.querySelector('.page-collapser');
+            if (pageCollapser) pageCollapser.style.display = 'none';
+            // No need to stop checking, user might navigate away from welcome page.
+            return;
+        } else {
+            const pageCollapser = document.querySelector('.page-collapser');
+            if (pageCollapser) pageCollapser.style.display = '';
+        }
+
+        this.checkCount++;
+        console.log(`[MapApp] 安全检查 第 ${this.checkCount}/${this.maxChecks} 次...`);
+
+        if (typeof parent.stMemoryEnhancement?.ext_exportAllTablesAsJson === 'function') {
+            console.log('%c[MapApp] 环境检查通过，开始执行初始化...', 'color: #28a745; font-weight: bold;');
+            this.performInitialization();
+            this.stopChecking(); // Found API, stop checking.
+            return;
+        }
+
+        if (this.checkCount > this.maxChecks) {
+            console.log('[MapApp] 达到最大检查次数，停止自动初始化。');
+            if (!this.initialized) {
+                MapApp.showRetryButton("地图初始化超时。请确认您当前在角色对话页面，且记忆插件已启用。");
+            }
+            this.stopChecking();
+        }
+    },
+
+    isWelcomePage() {
+        try {
+            if (window.self === window.top) return false;
+            
+            const messages = parent.document.querySelectorAll('#chat .mes');
+            if (messages.length === 0) return true;
+            
+            const lastMessage = messages[messages.length - 1];
+            const nameElement = lastMessage.querySelector('span.name_text');
+            
+            if (!nameElement) return true;
+            
+            const speakerName = nameElement.textContent.trim();
+            const welcomeSpeakers = ['Assistant', 'SillyTavern System'];
+
+            return welcomeSpeakers.includes(speakerName);
+
+        } catch (e) {
+            // If we can't access parent, assume it's not the right context.
+            return true;
+        }
+    },
+
+    performInitialization() {
+        try {
+            this.initialized = true;
+            console.log('%c[MapApp] MapApp.init() 被调用，地图正在加载...', 'color: #007bff; font-weight: bold;');
+            window.MapApp.init();
+        } catch (error) {
+            console.error('[MapApp] 初始化过程中发生严重错误:', error);
+            this.initialized = false; // Allow re-initialization
+            MapApp.showRetryButton(`初始化失败: ${error.message}`);
+        }
+    },
+    
+    stopChecking() {
+        if (this.checkInterval) {
+            clearInterval(this.checkInterval);
+            this.checkInterval = null;
+            console.log('[MapApp] 定时检查已停止。');
+        }
+    },
+        
+    forceCheck() {
+        console.log('[MapApp] 手动触发重新检查...');
+        this.onPageChange();
+    }
+};
+
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('[MapApp] DOM 已加载，开始统一初始化流程。');
+        DOMManager.init();
+    });
+</script>
+
+
+</body>
+</html>
+
+```
