@@ -13,6 +13,7 @@
     <meta name="darkreader-lock">
 
     <link rel="preconnect" href="https://fontsapi.zeoseven.com" crossorigin>
+    <link href="https://fontsapi.zeoseven.com/css?family=TsangerFeiBai%20W03:400,600,700&display=swap" rel="stylesheet">
         
 <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 <script src="https://cdn.cbd.int/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
@@ -232,7 +233,9 @@
         .map-wrapper {
             overflow: hidden;
             padding: var(--space-4);
-            max-height: 100vh;
+            transition: max-height var(--duration-fast) var(--ease-out), 
+                        opacity var(--duration-fast) var(--ease-out), 
+                        padding var(--duration-fast) var(--ease-out);
         }
 
         body.is-collapsed .map-wrapper {
@@ -240,6 +243,11 @@
             opacity: 0;
             padding-top: 0;
             padding-bottom: 0;
+        }
+
+        body:not(.is-collapsed) .map-wrapper {
+            max-height: none;
+            opacity: 1;
         }
 
         .map-interface {
@@ -311,6 +319,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            font-display: swap;
         }
 
         .header-info {
@@ -645,7 +654,6 @@
             stroke: var(--accent-primary);
             stroke-width: 2px;
             fill: rgba(59, 130, 246, 0.2);
-            transform-origin: center center;
             animation: glowPulse 2.5s ease-in-out infinite;
         }
 
@@ -653,10 +661,12 @@
             0%, 100% {
                 filter: drop-shadow(0 0 3px var(--accent-primary));
                 stroke-width: 2px;
+                transform: scale(1);
             }
             50% {
                 filter: drop-shadow(0 0 10px var(--accent-primary)) drop-shadow(0 0 20px rgba(59, 130, 246, 0.5));
                 stroke-width: 4px;
+                transform: scale(1.05);
             }
         }
 
@@ -1518,6 +1528,11 @@
                 rect.setAttribute('width', loc.width);
                 rect.setAttribute('height', loc.height);
                 rect.setAttribute('rx', Math.min(loc.width, loc.height) * 0.1);
+                
+                // Set transform-origin to the center of the rectangle for proper scaling
+                const centerX = loc.x + loc.width / 2;
+                const centerY = loc.y + loc.height / 2;
+                rect.style.transformOrigin = `${centerX}px ${centerY}px`;
             
                 const label = g.querySelector('.map-location-label');
                 label.setAttribute('x', loc.x + loc.width / 2);
