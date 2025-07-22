@@ -667,15 +667,225 @@
     ::-webkit-scrollbar-thumb:hover { background-color: var(--c-accent-primary); }
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
     @media (prefers-contrast: high) { :root, html[data-theme='dark'] { --c-border-primary: currentColor; --c-text-primary: CanvasText; --c-text-secondary: CanvasText; --c-background-primary: Canvas; --c-background-secondary: Canvas; --c-background-tertiary: Canvas; --c-accent-primary: LinkText; --c-accent-secondary: LinkText; } }
+    
+    /* 九宫格移动端布局 */
+    .mobile-grid-layout {
+        display: none;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(3, minmax(100px, 1fr)); /* 固定最小高度 */
+        gap: 8px;
+        padding: 15px;
+        height: 100%;
+        min-height: 350px; /* 增加整体最小高度 */
+        box-sizing: border-box;
+    }
+    
+    .mobile-grid-item {
+        background: linear-gradient(135deg, var(--c-gradient-start), var(--c-gradient-end));
+        border: 2px solid var(--c-border-primary);
+        border-radius: var(--border-radius-lg);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all var(--transition-normal);
+        position: relative;
+        min-height: 100px; /* 固定最小高度 */
+        height: 100px; /* 固定高度 */
+        font-family: var(--font-ui);
+        text-align: center;
+        padding: 12px 8px; /* 增加内边距 */
+        overflow: hidden;
+    }
+    
+    .mobile-grid-item:hover {
+        transform: scale(1.05);
+        border-color: var(--c-accent-secondary);
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .mobile-grid-item:active {
+        transform: scale(0.95);
+    }
+    
+    .mobile-grid-item.is-current {
+        background: linear-gradient(135deg, var(--c-accent-primary), var(--c-accent-secondary));
+        border-color: var(--c-accent-primary);
+        color: var(--c-text-inverted);
+        animation: pulse-glow-mobile 2s infinite ease-in-out;
+    }
+    
+    .mobile-grid-item.is-empty {
+        opacity: 0.3;
+        cursor: default;
+        background: var(--c-background-tertiary);
+    }
+    
+    .mobile-grid-item.is-empty:hover {
+        transform: none;
+        border-color: var(--c-border-primary);
+        box-shadow: none;
+    }
+    
+    .mobile-grid-item-icon {
+        font-size: 22px; /* 增大图标 */
+        margin-bottom: 6px; /* 增加间距 */
+        opacity: 0.8;
+    }
+    
+    .mobile-grid-item-name {
+        font-size: 14px; /* 增大字体 */
+        font-weight: 600;
+        line-height: 1.3; /* 增加行高 */
+        word-break: break-word;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        max-width: 100%;
+    }
+    
+    .mobile-grid-item-sub-count {
+        position: absolute;
+        top: 6px; /* 调整位置 */
+        right: 6px;
+        background: color-mix(in srgb, var(--c-accent-primary) 80%, transparent);
+        color: var(--c-text-inverted);
+        font-size: 9px; /* 稍微增大 */
+        padding: 3px 5px; /* 增加内边距 */
+        border-radius: var(--border-radius-xs);
+        min-width: 14px; /* 增加最小宽度 */
+        text-align: center;
+        font-weight: bold;
+    }
+    
+    @keyframes pulse-glow-mobile {
+        0%, 100% {
+            box-shadow: 0 0 8px var(--c-accent-primary);
+        }
+        50% {
+            box-shadow: 0 0 16px var(--c-accent-secondary), 0 0 24px color-mix(in srgb, var(--c-accent-secondary) 50%, transparent);
+        }
+    }
+    
     @media (max-width: 768px) {
         :root { --font-size-base: 12px; --spacing-md: 10px; --spacing-lg: 15px; }
         body { padding: 5px; }
-        .map-interface {display: none; }
+        .map-interface { display: none; }
+        .map-interface.mobile-mode { display: flex !important; }
+        
+        /* 移动端动画性能优化 - 精简动画效果 */
+        /* 禁用复杂的3D变换和弹跳动画 */
+        * {
+            transform: none !important;
+            will-change: auto !important;
+            transition-duration: 0.15s !important; /* 统一缩短动画时间 */
+            transition-timing-function: ease !important; /* 简化缓动函数 */
+        }
+        
+        /* 保留必要的基础交互动画，但简化效果 */
+        .partner-button:hover,
+        .interaction-button:hover, 
+        .sub-location-button:hover, 
+        .use-button:hover, 
+        .external-area-button:hover,
+        .mobile-grid-item:hover {
+            transform: none !important; /* 移除hover时的transform */
+            box-shadow: none !important; /* 移除阴影动画 */
+        }
+        
+        .partner-button:active,
+        .interaction-button:active, 
+        .sub-location-button:active, 
+        .use-button:active, 
+        .external-area-button:active,
+        .mobile-grid-item:active {
+            transform: scale(0.98) !important; /* 简化点击动画 */
+            transition-duration: 0.1s !important;
+        }
+        
+        /* 禁用复杂的关键帧动画 */
+        @keyframes pulse-glow-enhanced { 
+            0%, 100% { 
+                border-color: var(--c-accent-primary);
+                filter: none; /* 移除滤镜效果 */
+            }
+        }
+        
+        @keyframes pulse-glow-mobile { 
+            0%, 100% { 
+                box-shadow: 0 0 4px var(--c-accent-primary); /* 简化发光效果 */
+            }
+            50% { 
+                box-shadow: 0 0 8px var(--c-accent-secondary);
+            }
+        }
+        
+        /* 简化模态框动画 */
+        .modal-dialog {
+            transform: scale(1) !important;
+            transition: opacity 0.2s ease !important;
+        }
+        
+        .modal-overlay.hidden .modal-dialog { 
+            transform: scale(1) !important; 
+            opacity: 0; 
+        }
+        
+        /* 禁用复杂的loading动画 */
+        .interaction-button.is-loading::after, 
+        .use-button.is-loading::after {
+            animation-duration: 1s !important; /* 减慢loading动画 */
+        }
+        
+        /* 简化地图容器动画 */
+        .map-wrapper {
+            transition: max-height 0.2s ease !important;
+        }
+        
+        .map-wrapper > * {
+            transition: opacity 0.2s ease !important;
+        }
+        
+        /* 禁用复杂的SVG动画效果 */
+        .map-location-group {
+            transition: none !important;
+        }
+        
+        #visual-map .svg-pan-zoom_viewport {
+            transition: none !important;
+        }
+        
+        /* 简化列表动画 */
+        .list-item-enter {
+            transition: opacity 0.2s ease !important;
+        }
+        
         .map-header { flex-direction: column; gap: var(--spacing-md); }
         .map-header h2 { font-size: 1.5rem; }
         .top-right-buttons { order: -1; width: 100%; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
         .top-right-buttons .partner-button { flex-grow: 1; justify-content: center; }
-        #visual-map-container { height: 38vh; min-height: 220px; }
+        
+        /* 移动端使用九宫格布局 */
+        #visual-map-container.mobile-grid-mode {
+            height: 65vh; /* 稍微增加高度以适应更大的格子 */
+            min-height: 350px; /* 增加最小高度 */
+            padding: 0;
+            background: var(--c-background-secondary);
+        }
+        
+        #visual-map-container.mobile-grid-mode .mobile-grid-layout {
+            display: grid;
+        }
+        
+        #visual-map-container.mobile-grid-mode #visual-map {
+            display: none;
+        }
+        
+        #visual-map-container.mobile-grid-mode .map-custom-controls {
+            display: none;
+        }
         .partner-button-list, .external-area-buttons { display: flex; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 10px; -webkit-overflow-scrolling: touch; scrollbar-width: none; flex-shrink: 0; white-space: nowrap; }
         .partner-button-list::-webkit-scrollbar, .external-area-buttons::-webkit-scrollbar { display: none; }
         .partner-button { padding: 8px 14px; font-size: 0.9rem; flex-shrink: 0; white-space: nowrap; }
@@ -732,6 +942,53 @@
             </div>
             <div id="visual-map-container">
                 <svg id="visual-map" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg"></svg>
+                <div class="mobile-grid-layout" id="mobile-grid-layout">
+                    <div class="mobile-grid-item" data-grid-index="0">
+                        <div class="mobile-grid-item-icon"><i class="fas fa-map-marker-alt"></i></div>
+                        <div class="mobile-grid-item-name"></div>
+                        <div class="mobile-grid-item-sub-count"></div>
+                    </div>
+                    <div class="mobile-grid-item" data-grid-index="1">
+                        <div class="mobile-grid-item-icon"><i class="fas fa-home"></i></div>
+                        <div class="mobile-grid-item-name"></div>
+                        <div class="mobile-grid-item-sub-count"></div>
+                    </div>
+                    <div class="mobile-grid-item" data-grid-index="2">
+                        <div class="mobile-grid-item-icon"><i class="fas fa-building"></i></div>
+                        <div class="mobile-grid-item-name"></div>
+                        <div class="mobile-grid-item-sub-count"></div>
+                    </div>
+                    <div class="mobile-grid-item" data-grid-index="3">
+                        <div class="mobile-grid-item-icon"><i class="fas fa-tree"></i></div>
+                        <div class="mobile-grid-item-name"></div>
+                        <div class="mobile-grid-item-sub-count"></div>
+                    </div>
+                    <div class="mobile-grid-item" data-grid-index="4">
+                        <div class="mobile-grid-item-icon"><i class="fas fa-star"></i></div>
+                        <div class="mobile-grid-item-name"></div>
+                        <div class="mobile-grid-item-sub-count"></div>
+                    </div>
+                    <div class="mobile-grid-item" data-grid-index="5">
+                        <div class="mobile-grid-item-icon"><i class="fas fa-compass"></i></div>
+                        <div class="mobile-grid-item-name"></div>
+                        <div class="mobile-grid-item-sub-count"></div>
+                    </div>
+                    <div class="mobile-grid-item" data-grid-index="6">
+                        <div class="mobile-grid-item-icon"><i class="fas fa-mountain"></i></div>
+                        <div class="mobile-grid-item-name"></div>
+                        <div class="mobile-grid-item-sub-count"></div>
+                    </div>
+                    <div class="mobile-grid-item" data-grid-index="7">
+                        <div class="mobile-grid-item-icon"><i class="fas fa-water"></i></div>
+                        <div class="mobile-grid-item-name"></div>
+                        <div class="mobile-grid-item-sub-count"></div>
+                    </div>
+                    <div class="mobile-grid-item" data-grid-index="8">
+                        <div class="mobile-grid-item-icon"><i class="fas fa-door-open"></i></div>
+                        <div class="mobile-grid-item-name"></div>
+                        <div class="mobile-grid-item-sub-count"></div>
+                    </div>
+                </div>
                 <div class="map-custom-controls">
                     <button id="zoom-in-btn" title="放大"><i class="fas fa-plus"></i></button>
                     <button id="zoom-out-btn" title="缩小"><i class="fas fa-minus"></i></button>
@@ -937,7 +1194,7 @@
         },
         state: {
             mapData: null, panZoomInstance: null, isDragging: false, touchStartTarget: null, zoomInterval: null,
-            layoutWorker: null
+            layoutWorker: null, isMobile: false, performanceMonitor: { startTime: 0, renderTime: 0, memoryUsage: 0 }
         },
         elements: {},
 
@@ -945,42 +1202,573 @@
             if (this.initialized) return;
             this.initialized = true;
             console.log("MapApp.init() - 核心应用初始化开始。");
+            this.detectMobile();
+            this.initPerformanceMonitor();
             this.cacheElements(); 
             this.bindEvents();
             this.initLayoutWorker();
             this.loadDataAndRender(); // First load
             
-            // Set up auto-refresh
-            setInterval(() => this.loadDataAndRender(true), 30000); // Refresh every 30 seconds
+            // 设置实时数据更新回调 - 学习api.html的完全依赖回调策略
+            this.setupDataUpdateCallback();
+            
+            // 设置备用事件监听器
+            this.setupBackupEventListener();
+            
+            console.log(`[MapApp] 初始化完成 - 使用纯回调驱动模式，无轮询`);
         },
+        
+        detectMobile() {
+            // 检测移动设备
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                             window.innerWidth <= 768 || 
+                             (window.matchMedia && window.matchMedia("(max-width: 768px)").matches);
+            
+            this.state.isMobile = isMobile;
+            
+            // 移动端性能优化
+            if (isMobile) {
+                this.optimizeForMobile();
+            }
+            
+            // 监听窗口大小变化
+            const resizeHandler = () => {
+                const newIsMobile = window.innerWidth <= 768;
+                if (this.state.isMobile !== newIsMobile) {
+                    this.state.isMobile = newIsMobile;
+                    console.log(`[MapApp] 设备模式切换: ${newIsMobile ? '移动端' : '桌面端'} (窗口宽度: ${window.innerWidth}px)`);
+                    
+                    // 应用相应的性能优化
+                    if (newIsMobile) {
+                        this.optimizeForMobile();
+                    } else {
+                        this.restoreDesktopAnimations();
+                    }
+                    
+                    this.updateLayoutMode();
+                    this.updatePerformanceMonitor();
+                }
+            };
+            
+            window.addEventListener('resize', resizeHandler);
+            console.log(`[MapApp] 设备检测完成: ${isMobile ? '移动端' : '桌面端'} (窗口宽度: ${window.innerWidth}px)`);
+        },
+        
+        optimizeForMobile() {
+            // 移动端性能优化：禁用一些JavaScript动画效果
+            console.log('[MapApp] 应用移动端性能优化');
+            
+            // 减少staggered entrance动画的延迟
+            const originalStaggeredEntrance = this.UI.staggeredEntrance;
+            this.UI.staggeredEntrance = function(containerSel, itemSel) {
+                const container = document.querySelector(containerSel);
+                if (!container) return;
+
+                const items = container.querySelectorAll(itemSel);
+                items.forEach((item, index) => {
+                    // 移动端：减少动画延迟，加快动画速度
+                    item.classList.remove('list-item-enter', 'list-item-enter-active');
+                    item.style.transitionDelay = '';
+
+                    requestAnimationFrame(() => {
+                        item.classList.add('list-item-enter');
+                        requestAnimationFrame(() => {
+                            setTimeout(() => {
+                                // 移动端延迟减半
+                                item.style.transitionDelay = `${index * 25}ms`; // 原来是50ms
+                                item.classList.add('list-item-enter-active');
+                            }, 10); // 原来是20ms
+                        });
+                    });
+                });
+            };
+            
+            // 禁用一些复杂的CSS动画
+            const styleSheet = document.createElement('style');
+            styleSheet.textContent = `
+                /* 移动端额外的性能优化 */
+                .map-location-group:hover {
+                    transform: none !important;
+                }
+                
+                .map-custom-controls button:hover {
+                    transform: none !important;
+                }
+                
+                /* 简化九宫格动画 */
+                .mobile-grid-item {
+                    transition: background-color 0.1s ease !important;
+                }
+                
+                .mobile-grid-item.is-current {
+                    animation: none !important;
+                    background: linear-gradient(135deg, var(--c-accent-primary), var(--c-accent-secondary));
+                    border-color: var(--c-accent-primary);
+                    color: var(--c-text-inverted);
+                }
+            `;
+            document.head.appendChild(styleSheet);
+            styleSheet.setAttribute('data-mobile-optimization', 'true');
+        },
+        
+        restoreDesktopAnimations() {
+            // 恢复桌面端动画效果
+            console.log('[MapApp] 恢复桌面端动画效果');
+            
+            // 移除移动端优化样式
+            const mobileStyles = document.querySelector('style[data-mobile-optimization="true"]');
+            if (mobileStyles) {
+                mobileStyles.remove();
+            }
+            
+            // 恢复原始的staggeredEntrance函数（如果被修改过）
+            // 这里可以恢复到原始实现
+        },
+        
+        updateLayoutMode() {
+            const mapInterface = document.querySelector('.map-interface');
+            const visualMapContainer = this.elements.visualMapContainer;
+            
+            if (!mapInterface || !visualMapContainer) {
+                console.warn('[MapApp] 无法找到必要的DOM元素进行布局切换');
+                return;
+            }
+            
+            console.log(`[MapApp] 切换到${this.state.isMobile ? '移动端' : '桌面端'}布局模式`);
+            
+            if (this.state.isMobile) {
+                mapInterface.classList.add('mobile-mode');
+                visualMapContainer.classList.add('mobile-grid-mode');
+                this.renderMobileGrid();
+            } else {
+                mapInterface.classList.remove('mobile-mode');
+                visualMapContainer.classList.remove('mobile-grid-mode');
+                // 重新渲染SVG地图
+                if (this.state.mapData) {
+                    this.Renderer.renderMap(this.state.mapData, this.elements.visualMap, this.config);
+                }
+            }
+        },
+        
+        initPerformanceMonitor() {
+            // 初始化性能监控
+            this.state.performanceMonitor.startTime = performance.now();
+            
+            // 监听内存使用情况（如果浏览器支持）
+            if (window.performance && window.performance.memory) {
+                setInterval(() => {
+                    this.updateMemoryUsage();
+                }, 5000); // 每5秒更新一次内存使用情况
+            }
+            
+            console.log('[MapApp] 性能监控已初始化 - 使用控制台输出模式');
+        },
+        
+        updateMemoryUsage() {
+            if (window.performance && window.performance.memory) {
+                const memory = window.performance.memory;
+                const memoryUsage = Math.round(memory.usedJSHeapSize / 1024 / 1024);
+                this.state.performanceMonitor.memoryUsage = memoryUsage;
+                
+                // 输出到控制台
+                const locationCount = this.state.mapData?.locations?.length || 0;
+                const layoutMode = this.state.isMobile ? '移动端' : '桌面端';
+                const animationMode = this.state.isMobile ? '精简动画' : '完整动画';
+                
+                console.log(`[MapApp 性能监控] 内存: ${memoryUsage}MB | 地点数: ${locationCount} | 模式: ${layoutMode} | 动画: ${animationMode}`);
+                
+                // 如果内存使用过高，发出警告
+                if (memoryUsage > 50) {
+                    console.warn(`[MapApp 性能警告] 内存使用过高: ${memoryUsage}MB`);
+                }
+                
+                // 移动端特殊优化建议
+                if (this.state.isMobile && memoryUsage > 30) {
+                    console.warn(`[MapApp 移动端警告] 建议清理内存，当前使用: ${memoryUsage}MB`);
+                }
+            }
+        },
+        
+        
+        updatePerformanceMonitor() {
+            // 控制台输出性能监控信息
+            const renderTime = this.state.performanceMonitor.renderTime;
+            const memoryUsage = this.state.performanceMonitor.memoryUsage;
+            const locationCount = this.state.mapData?.locations?.length || 0;
+            const layoutMode = this.state.isMobile ? '移动端' : '桌面端';
+            const animationMode = this.state.isMobile ? '精简动画' : '完整动画';
+            
+            // 输出渲染性能信息
+            if (renderTime > 0) {
+                const perfLevel = renderTime > 100 ? '⚠️ 较慢' : '✅ 正常';
+                console.log(`[MapApp 渲染性能] ${perfLevel} ${renderTime}ms | 地点数: ${locationCount} | 模式: ${layoutMode} | 动画: ${animationMode}`);
+                
+                // 如果渲染时间过长，发出警告
+                if (renderTime > 100) {
+                    console.warn(`[MapApp 性能警告] 渲染时间过长: ${renderTime}ms`);
+                }
+            }
+        },
+        
+        renderMobileGrid() {
+            if (!this.state.mapData || !this.state.isMobile) return;
+            
+            const mobileGrid = document.getElementById('mobile-grid-layout');
+            if (!mobileGrid) return;
+            
+            const locations = this.state.mapData.locations || [];
+            const gridItems = mobileGrid.querySelectorAll('.mobile-grid-item');
+            
+            // 使用智能中心式排列算法
+            const sortedLocations = this.sortLocationsByImportance(locations);
+            
+            // 重新排列：确保按照算法返回的顺序正确显示
+            const gridPositionMap = this.createGridPositionMap(sortedLocations);
+            
+            // 清空所有格子
+            gridItems.forEach((item, gridIndex) => {
+                const nameEl = item.querySelector('.mobile-grid-item-name');
+                const iconEl = item.querySelector('.mobile-grid-item-icon i');
+                const countEl = item.querySelector('.mobile-grid-item-sub-count');
+                
+                item.classList.remove('is-current', 'is-empty');
+                item.dataset.locationName = '';
+                nameEl.textContent = '';
+                countEl.textContent = '';
+                
+                // 查找应该在这个网格位置显示的地点
+                const locationForThisPosition = gridPositionMap[gridIndex];
+                
+                if (locationForThisPosition) {
+                    nameEl.textContent = locationForThisPosition.name;
+                    item.dataset.locationName = locationForThisPosition.name;
+                    
+                    // 设置图标
+                    this.setLocationIcon(iconEl, locationForThisPosition);
+                    
+                    // 设置子地点数量
+                    if (locationForThisPosition.subLocations && locationForThisPosition.subLocations.length > 0) {
+                        countEl.textContent = locationForThisPosition.subLocations.length.toString();
+                    }
+                    
+                    // 标记当前地点
+                    if (locationForThisPosition.name === this.state.mapData.protagonistLocationName) {
+                        item.classList.add('is-current');
+                    }
+                    
+                    // 添加点击事件
+                    item.onclick = () => this.handleMobileGridClick(locationForThisPosition);
+                } else {
+                    item.classList.add('is-empty');
+                    item.onclick = null;
+                }
+            });
+            
+            console.log(`[MapApp] 移动端九宫格渲染完成，使用智能中心式布局，显示 ${sortedLocations.length} 个地点`);
+        },
+        
+        createGridPositionMap(allLocations) {
+            // 基于XY坐标的智能九宫格映射
+            // 布局：0 1 2
+            //      3 4 5  
+            //      6 7 8
+            const positionMap = {};
+            const protagonist = this.state.mapData.protagonistLocationName;
+            
+            // 找到当前地点作为中心参考点
+            const currentLocation = allLocations.find(loc => loc.name === protagonist);
+            
+            if (!currentLocation) {
+                console.log('[九宫格坐标映射] 未找到当前地点，使用传统映射');
+                return this.createGridPositionMapTraditional(allLocations);
+            }
+            
+            // 当前地点放在中心
+            positionMap[4] = currentLocation;
+            console.log(`[九宫格坐标映射] 位置4(中心): ${currentLocation.name} (${currentLocation.x}, ${currentLocation.y}) - 当前地点`);
+            
+            // 获取其他地点并按坐标分配到九宫格
+            const otherLocations = allLocations.filter(loc => loc.name !== protagonist);
+            
+            if (otherLocations.length === 0) {
+                return positionMap;
+            }
+            
+            // 计算相对于当前地点的方向和距离
+            const locationWithDirections = otherLocations.map(loc => {
+                const relativeX = loc.x - currentLocation.x;
+                const relativeY = loc.y - currentLocation.y;
+                const distance = Math.sqrt(relativeX * relativeX + relativeY * relativeY);
+                
+                // 计算角度（0度为正右方，顺时针）
+                let angle = Math.atan2(relativeY, relativeX) * 180 / Math.PI;
+                if (angle < 0) angle += 360;
+                
+                return {
+                    location: loc,
+                    relativeX,
+                    relativeY,
+                    distance,
+                    angle,
+                    gridPosition: this.calculateGridPosition(relativeX, relativeY)
+                };
+            });
+            
+            // 按网格位置分组
+            const positionGroups = {};
+            locationWithDirections.forEach(item => {
+                const pos = item.gridPosition;
+                if (!positionGroups[pos]) {
+                    positionGroups[pos] = [];
+                }
+                positionGroups[pos].push(item);
+            });
+            
+            // 为每个网格位置选择最合适的地点
+            Object.keys(positionGroups).forEach(pos => {
+                const group = positionGroups[pos];
+                
+                if (group.length === 1) {
+                    // 只有一个地点，直接分配
+                    positionMap[pos] = group[0].location;
+                    this.logPositionMapping(pos, group[0]);
+                } else {
+                    // 多个地点竞争同一位置，选择距离最近的或最重要的
+                    const bestLocation = this.selectBestLocationForPosition(group);
+                    positionMap[pos] = bestLocation.location;
+                    this.logPositionMapping(pos, bestLocation);
+                    
+                    // 剩余地点分配到其他空位置
+                    const remainingLocations = group.filter(item => item !== bestLocation);
+                    this.redistributeRemainingLocations(remainingLocations, positionMap);
+                }
+            });
+            
+            return positionMap;
+        },
+        
+        calculateGridPosition(relativeX, relativeY) {
+            // 根据相对坐标计算应该放在九宫格的哪个位置
+            // 布局：0 1 2
+            //      3 4 5  
+            //      6 7 8
+            
+            // 判断主要方向
+            const absX = Math.abs(relativeX);
+            const absY = Math.abs(relativeY);
+            
+            // 定义阈值，用于判断是否足够偏向某个方向
+            const threshold = 50; // 可以根据实际情况调整
+            
+            let xDirection = 0; // -1: 左, 0: 中, 1: 右
+            let yDirection = 0; // -1: 上, 0: 中, 1: 下
+            
+            if (absX > threshold) {
+                xDirection = relativeX > 0 ? 1 : -1;
+            }
+            
+            if (absY > threshold) {
+                yDirection = relativeY > 0 ? 1 : -1;
+            }
+            
+            // 映射到九宫格位置
+            const positionMatrix = [
+                [0, 1, 2],  // 上排 (yDirection = -1)
+                [3, 4, 5],  // 中排 (yDirection = 0)
+                [6, 7, 8]   // 下排 (yDirection = 1)
+            ];
+            
+            const row = yDirection + 1; // 转换为数组索引 (0, 1, 2)
+            const col = xDirection + 1; // 转换为数组索引 (0, 1, 2)
+            
+            return positionMatrix[row][col];
+        },
+        
+        selectBestLocationForPosition(locationGroup) {
+            // 从多个竞争同一位置的地点中选择最合适的
+            // 优先级：1. 距离较近 2. 有子地点的重要地点
+            
+            return locationGroup.reduce((best, current) => {
+                const bestSubCount = best.location.subLocations?.length || 0;
+                const currentSubCount = current.location.subLocations?.length || 0;
+                
+                // 如果重要性相同，选择距离更近的
+                if (bestSubCount === currentSubCount) {
+                    return current.distance < best.distance ? current : best;
+                }
+                
+                // 选择更重要的地点
+                return currentSubCount > bestSubCount ? current : best;
+            });
+        },
+        
+        redistributeRemainingLocations(remainingLocations, positionMap) {
+            // 将剩余地点分配到空的位置
+            const emptyPositions = [];
+            for (let i = 0; i < 9; i++) {
+                if (i !== 4 && !positionMap[i]) { // 排除中心位置
+                    emptyPositions.push(i);
+                }
+            }
+            
+            remainingLocations.forEach((item, index) => {
+                if (index < emptyPositions.length) {
+                    const pos = emptyPositions[index];
+                    positionMap[pos] = item.location;
+                    console.log(`[九宫格坐标映射] 位置${pos}(${this.getPositionName(pos)}): ${item.location.name} - 重新分配`);
+                }
+            });
+        },
+        
+        logPositionMapping(pos, locationItem) {
+            const positionName = this.getPositionName(pos);
+            const loc = locationItem.location;
+            const subCount = loc.subLocations?.length || 0;
+            const direction = `相对坐标(${Math.round(locationItem.relativeX)}, ${Math.round(locationItem.relativeY)})`;
+            console.log(`[九宫格坐标映射] 位置${pos}(${positionName}): ${loc.name} - ${direction} ${subCount > 0 ? subCount + '个子地点' : '普通地点'}`);
+        },
+        
+        createGridPositionMapTraditional(allLocations) {
+            // 传统的重要性映射（备用方案）
+            const positionMap = {};
+            const protagonist = this.state.mapData.protagonistLocationName;
+            const priorityPositions = [4, 1, 3, 5, 7, 0, 2, 6, 8];
+            
+            const currentLocation = allLocations.find(loc => loc.name === protagonist);
+            const otherLocations = allLocations.filter(loc => loc.name !== protagonist);
+            
+            if (currentLocation) {
+                positionMap[4] = currentLocation;
+            }
+            
+            let positionIndex = 1;
+            otherLocations.forEach((loc) => {
+                if (positionIndex < priorityPositions.length) {
+                    const gridPosition = priorityPositions[positionIndex];
+                    positionMap[gridPosition] = loc;
+                    positionIndex++;
+                }
+            });
+            
+            return positionMap;
+        },
+        
+        getPositionName(gridIndex) {
+            const positionNames = {
+                0: '左上', 1: '上方', 2: '右上',
+                3: '左方', 4: '中心', 5: '右方',
+                6: '左下', 7: '下方', 8: '右下'
+            };
+            return positionNames[gridIndex] || '未知';
+        },
+        
+        sortLocationsByImportance(locations) {
+            const protagonist = this.state.mapData.protagonistLocationName;
+            
+            // 找到当前地点作为中心参考点
+            const currentLocation = locations.find(loc => loc.name === protagonist);
+            
+            if (!currentLocation) {
+                // 如果没有当前地点，使用传统排序
+                console.log('[九宫格坐标排序] 未找到当前地点，使用传统排序');
+                return this.sortLocationsByImportanceTraditional(locations);
+            }
+            
+            console.log(`[九宫格坐标排序] 以 ${currentLocation.name} (${currentLocation.x}, ${currentLocation.y}) 为中心进行坐标排列`);
+            
+            return locations; // 返回所有地点供坐标映射使用
+        },
+        
+        sortLocationsByImportanceTraditional(locations) {
+            // 传统的重要性排序（备用方案）
+            const protagonist = this.state.mapData.protagonistLocationName;
+            
+            return locations.slice().sort((a, b) => {
+                if (a.name === protagonist) return -1;
+                if (b.name === protagonist) return 1;
+                
+                const aSubCount = a.subLocations?.length || 0;
+                const bSubCount = b.subLocations?.length || 0;
+                if (aSubCount !== bSubCount) return bSubCount - aSubCount;
+                
+                return a.name.localeCompare(b.name, 'zh-CN');
+            });
+        },
+        
+        setLocationIcon(iconEl, location) {
+            // 根据地点类型设置图标
+            const iconMap = {
+                '住宅': 'fa-home',
+                '商店': 'fa-store',
+                '学校': 'fa-school',
+                '公园': 'fa-tree',
+                '办公': 'fa-building',
+                '餐厅': 'fa-utensils',
+                '交通': 'fa-bus',
+                '娱乐': 'fa-gamepad',
+                '医院': 'fa-hospital',
+                '银行': 'fa-university'
+            };
+            
+            const defaultIcon = 'fa-map-marker-alt';
+            const iconClass = iconMap[location.type] || defaultIcon;
+            
+            iconEl.className = `fas ${iconClass}`;
+        },
+        
+        handleMobileGridClick(location) {
+            if (this.state.isDragging) return;
+            
+            // 与原有的地点点击逻辑保持一致
+            this.UI.openMainLocationModal(location);
+        },
+        
         initLayoutWorker() {
+            // 简化版布局工作器 - 学习api.html的简单方法
             const workerCode = `
-                const applySimpleLayout = (locations, layoutConfig) => {
+                const applyOptimizedLayout = (locations, layoutConfig) => {
                     if (locations.length < 2) return locations;
-                    const minSpacing = layoutConfig.minRoomSpacing;
-                    for (let iter = 0; iter < 30; iter++) {
-                        let moved = false;
-                        for (let i = 0; i < locations.length; i++) {
+                    const minSpacing = layoutConfig.minRoomSpacing || 25;
+                    const maxIterations = Math.min(20, locations.length * 2);
+                    
+                    for (let iter = 0; iter < maxIterations; iter++) {
+                        let hasCollision = false;
+                        
+                        for (let i = 0; i < locations.length - 1; i++) {
                             for (let j = i + 1; j < locations.length; j++) {
                                 const a = locations[i], b = locations[j];
-                                const dx = (a.x + a.width / 2) - (b.x + b.width / 2), dy = (a.y + a.height / 2) - (b.y + b.height / 2);
-                                const combinedHalfW = a.width / 2 + b.width / 2 + minSpacing, combinedHalfH = a.height / 2 + b.height / 2 + minSpacing;
-                                const overlapX = combinedHalfW - Math.abs(dx), overlapY = combinedHalfH - Math.abs(dy);
+                                const dx = (a.x + a.width / 2) - (b.x + b.width / 2);
+                                const dy = (a.y + a.height / 2) - (b.y + b.height / 2);
+                                const combinedHalfW = a.width / 2 + b.width / 2 + minSpacing;
+                                const combinedHalfH = a.height / 2 + b.height / 2 + minSpacing;
+                                const overlapX = combinedHalfW - Math.abs(dx);
+                                const overlapY = combinedHalfH - Math.abs(dy);
+                                
                                 if (overlapX > 0 && overlapY > 0) {
-                                    moved = true;
-                                    const move = (overlapX < overlapY ? overlapX * (dx > 0 ? 1 : -1) : overlapY * (dy > 0 ? 1 : -1)) / 2;
-                                    if (overlapX < overlapY) { a.x += move; b.x -= move; } else { a.y += move; b.y -= move; }
+                                    hasCollision = true;
+                                    const moveDistance = Math.min(overlapX, overlapY) * 0.6;
+                                    
+                                    if (overlapX < overlapY) {
+                                        const direction = dx > 0 ? 1 : -1;
+                                        a.x += moveDistance * direction * 0.5;
+                                        b.x -= moveDistance * direction * 0.5;
+                                    } else {
+                                        const direction = dy > 0 ? 1 : -1;
+                                        a.y += moveDistance * direction * 0.5;
+                                        b.y -= moveDistance * direction * 0.5;
+                                    }
                                 }
                             }
                         }
-                        if (!moved) break;
+                        
+                        if (!hasCollision) break;
                     }
                     return locations;
                 };
 
             self.onmessage = function(e) {
                 const { locations, layoutConfig } = e.data;
-                const calculatedLocations = applySimpleLayout(locations, layoutConfig);
+                const calculatedLocations = applyOptimizedLayout(locations, layoutConfig);
                 self.postMessage(calculatedLocations);
             };
             `;
@@ -1022,16 +1810,7 @@
                     throw new Error("获取到的远端数据无效或为空。");
                 }
                 
-                this.state.mapData = this.DataProcessor.process(rawData);
-                console.log('[MapApp] 数据处理完成，准备渲染...');
-                this.render(isSilent);
-                console.log('[MapApp] 核心渲染完成。');
-
-                const isCollapsed = document.body.classList.contains('is-collapsed');
-                const mapInterfaceEl = document.querySelector('.map-interface');
-                if (mapInterfaceEl && !isCollapsed) {
-                    mapInterfaceEl.classList.add('show');
-                }
+                this.processAndRenderData(rawData, isSilent);
 
             } catch (error) {
                 console.error("MapApp: 加载或渲染数据时失败:", error);
@@ -1042,8 +1821,70 @@
                 }
             }
         },
+        
+        processAndRenderData(rawData, isSilent = false) {
+            this.state.mapData = this.DataProcessor.process(rawData);
+            console.log('[MapApp] 数据处理完成，准备渲染...');
+            this.render(isSilent);
+            console.log('[MapApp] 核心渲染完成。');
+
+            const isCollapsed = document.body.classList.contains('is-collapsed');
+            const mapInterfaceEl = document.querySelector('.map-interface');
+            if (mapInterfaceEl && !isCollapsed) {
+                mapInterfaceEl.classList.add('show');
+            }
+        },
+        
+        setupDataUpdateCallback() {
+            // 注册实时数据更新回调 - 学习自api.html的策略
+            if (typeof parent !== 'undefined' && 
+                parent.stMemoryEnhancement && 
+                typeof parent.stMemoryEnhancement.registerTableUpdateCallback === 'function') {
+                
+                parent.stMemoryEnhancement.registerTableUpdateCallback((newData) => {
+                    console.log('[MapApp] 通过回调接收到数据更新，正在刷新...', newData);
+                    
+                    try {
+                        this.processAndRenderData(newData, true);
+                        console.log('[MapApp] 实时数据更新成功');
+                    } catch (error) {
+                        console.error('[MapApp] 实时数据更新失败:', error);
+                    }
+                });
+                
+                console.log('[MapApp] 数据更新回调注册成功 - 将实现无刷新数据更新');
+                return true;
+            } else {
+                console.warn('[MapApp] 无法注册数据更新回调，API可能不可用');
+                return false;
+            }
+        },
+        
+        setupBackupEventListener() {
+            // (可选备用) 监听标准的聊天更新事件 - 学习自api.html
+            try {
+                if (typeof parent !== 'undefined' && 
+                    parent.tavern_events && 
+                    typeof parent.eventOn !== 'undefined') {
+                    
+                    parent.eventOn(parent.tavern_events.CHAT_UPDATED, () => {
+                        console.log('[MapApp] 检测到聊天更新，重新初始化...');
+                        this.loadDataAndRender(true);
+                    });
+                    
+                    console.log('[MapApp] 标准地图更新监听器已附加');
+                    return true;
+                }
+            } catch (error) {
+                console.warn('[MapApp] 无法设置备用事件监听器:', error);
+            }
+            return false;
+        },
         render(isSilent = false) {
             if (!this.state.mapData) return;
+            
+            // 开始性能监控
+            const renderStart = performance.now();
             
             if (!isSilent && this.state.panZoomInstance) {
                 this.state.panZoomInstance.destroy();
@@ -1054,7 +1895,18 @@
             this.elements.characterSearchInput.value = '';
             this.Renderer.renderImportantCharacters(this.state.mapData, this.elements, '');
             this.Renderer.renderExternalAreas(this.state.mapData, this.elements);
-            this.Renderer.renderMap(this.state.mapData, this.elements.visualMap, this.config, isSilent);
+            
+            // 根据设备类型选择渲染方式
+            if (this.state.isMobile) {
+                this.updateLayoutMode();
+            } else {
+                this.Renderer.renderMap(this.state.mapData, this.elements.visualMap, this.config, isSilent);
+            }
+            
+            // 更新性能监控
+            const renderEnd = performance.now();
+            this.state.performanceMonitor.renderTime = Math.round(renderEnd - renderStart);
+            this.updatePerformanceMonitor();
         },
         initializePanZoomWithRetry(retryCount = 0) {
             const maxRetries = 5, container = this.elements.visualMapContainer;
@@ -1256,80 +2108,96 @@
                     return;
                 }
 
-                this.applySimpleLayout(JSON.parse(JSON.stringify(data.locations)), config.layout)
+                // 使用优化的布局算法
+                this.applyOptimizedLayout(JSON.parse(JSON.stringify(data.locations)), config.layout)
                     .then(locations => {
                         const ns = "http://www.w3.org/2000/svg";
                         const bounds = this.calculateBounds(locations);
                         const padding = Math.max(bounds.width, bounds.height) * 0.1;
                         svgElement.setAttribute('viewBox', `${bounds.x - padding} ${bounds.y - padding} ${bounds.width + padding*2} ${bounds.height + padding*2}`);
                 
-                        if (!svgElement.querySelector('defs')) {
-                            const defs = this.createSVGElement(ns, 'defs', {});
-                            defs.innerHTML = `<linearGradient id="locationGradient" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" class="gradient-stop-1"/><stop offset="100%" class="gradient-stop-2"/></linearGradient>`;
-                            svgElement.prepend(defs);
-                        }
+                        // 确保渐变定义存在
+                        this.ensureGradientDefs(svgElement, ns);
                 
-                        const existingElements = new Map();
-                        svgElement.querySelectorAll('.map-location-group').forEach(el => {
-                            existingElements.set(el.dataset.locationName, el);
-                        });
-                
-                        const locationsToUpdate = locations;
-                        const CHUNK_SIZE = 8; // 每帧更新的元素数量
-                        let currentIndex = 0;
-                
-                        const updateChunkByFrame = () => {
-                            const chunk = locationsToUpdate.slice(currentIndex, currentIndex + CHUNK_SIZE);
-                            
-                            chunk.forEach(loc => {
-                                const existingEl = existingElements.get(loc.name);
-                                if (existingEl) {
-                                    this.updateMapLocation(existingEl, loc, data.protagonistLocationName);
-                                    existingElements.delete(loc.name);
-                                } else {
-                                    const newEl = this.createMapLocation(loc, data.protagonistLocationName, ns);
-                                    svgElement.appendChild(newEl);
-                                }
-                            });
-                
-                            currentIndex += CHUNK_SIZE;
-                
-                            if (currentIndex < locationsToUpdate.length) {
-                                requestAnimationFrame(updateChunkByFrame);
-                            } else {
-                                existingElements.forEach(el => el.remove());
-                                console.log("所有地点分帧更新完成。");
-                                if (!isSilent && window.MapApp?.initializePanZoomWithRetry) {
-                                    window.MapApp.initializePanZoomWithRetry();
-                                } else if (isSilent && window.MapApp?.state.panZoomInstance) {
-                                    window.MapApp.state.panZoomInstance.updateBBox();
-                                }
-                            }
-                        };
+                        // 使用对象池优化元素创建和更新
+                        this.optimizedElementUpdate(svgElement, locations, data.protagonistLocationName, ns);
                         
-                        requestAnimationFrame(updateChunkByFrame);
+                        console.log("优化渲染完成。");
+                        if (!isSilent && window.MapApp?.initializePanZoomWithRetry) {
+                            window.MapApp.initializePanZoomWithRetry();
+                        } else if (isSilent && window.MapApp?.state.panZoomInstance) {
+                            window.MapApp.state.panZoomInstance.updateBBox();
+                        }
                     })
                     .catch(error => {
                         console.error("Layout calculation failed:", error);
                         svgElement.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="red">布局计算失败</text>';
                     });
             },
-            applySimpleLayout(locations, layoutConfig) {
-                return new Promise((resolve, reject) => {
-                    const worker = window.MapApp.state.layoutWorker;
-                    if (!worker) {
-                        return reject(new Error("Layout worker not initialized."));
+            applyOptimizedLayout(locations, layoutConfig) {
+                // 简化的主线程布局计算 - 学习api.html的直接方法
+                if (locations.length < 2) return Promise.resolve(locations);
+                
+                const minSpacing = layoutConfig.minRoomSpacing || 25;
+                const maxIterations = Math.min(20, locations.length * 2);
+                
+                for (let iter = 0; iter < maxIterations; iter++) {
+                    let hasCollision = false;
+                    
+                    for (let i = 0; i < locations.length - 1; i++) {
+                        for (let j = i + 1; j < locations.length; j++) {
+                            const a = locations[i], b = locations[j];
+                            const dx = (a.x + a.width / 2) - (b.x + b.width / 2);
+                            const dy = (a.y + a.height / 2) - (b.y + b.height / 2);
+                            const combinedHalfW = a.width / 2 + b.width / 2 + minSpacing;
+                            const combinedHalfH = a.height / 2 + b.height / 2 + minSpacing;
+                            const overlapX = combinedHalfW - Math.abs(dx);
+                            const overlapY = combinedHalfH - Math.abs(dy);
+                            
+                            if (overlapX > 0 && overlapY > 0) {
+                                hasCollision = true;
+                                const moveDistance = Math.min(overlapX, overlapY) * 0.6;
+                                
+                                if (overlapX < overlapY) {
+                                    const direction = dx > 0 ? 1 : -1;
+                                    a.x += moveDistance * direction * 0.5;
+                                    b.x -= moveDistance * direction * 0.5;
+                                } else {
+                                    const direction = dy > 0 ? 1 : -1;
+                                    a.y += moveDistance * direction * 0.5;
+                                    b.y -= moveDistance * direction * 0.5;
+                                }
+                            }
+                        }
                     }
-
-                    worker.onmessage = (e) => {
-                        resolve(e.data);
-                    };
-
-                    worker.onerror = (e) => {
-                        reject(new Error(`Layout Worker Error: ${e.message}`));
-                    };
-
-                    worker.postMessage({ locations, layoutConfig });
+                    
+                    if (!hasCollision) break;
+                }
+                
+                return Promise.resolve(locations);
+            },
+            
+            // 确保渐变定义存在
+            ensureGradientDefs(svgElement, ns) {
+                if (!svgElement.querySelector('defs')) {
+                    const defs = this.createSVGElement(ns, 'defs', {});
+                    defs.innerHTML = `<linearGradient id="locationGradient" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" class="gradient-stop-1"/><stop offset="100%" class="gradient-stop-2"/></linearGradient>`;
+                    svgElement.prepend(defs);
+                }
+            },
+            
+            // 简化元素更新 - 学习api.html的直接方法
+            optimizedElementUpdate(svgElement, locations, protagonistLocationName, ns) {
+                // 清空并重新创建所有元素 - 更简单直接
+                svgElement.innerHTML = '';
+                
+                // 确保渐变定义存在
+                this.ensureGradientDefs(svgElement, ns);
+                
+                // 直接创建所有地点元素
+                locations.forEach(loc => {
+                    const g = this.createMapLocationFast(loc, protagonistLocationName, ns);
+                    svgElement.appendChild(g);
                 });
             },
             calculateBounds(locations) {
@@ -1340,31 +2208,46 @@
                 const minY = Math.min(...yCoords), maxY = Math.max(...yCoords);
                 return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
             },
-            updateMapLocation(g, loc, protagonistLocationName) {
-                g.classList.toggle('is-current-location', loc.name === protagonistLocationName);
-                g.style.setProperty('--room-area', `${loc.width * loc.height}`);
-                
+            // 简化的元素更新方法 - 学习api.html
+            updateMapLocationFast(g, loc, protagonistLocationName) {
                 const rect = g.querySelector('.map-location-rect');
-                rect.setAttribute('x', loc.x);
-                rect.setAttribute('y', loc.y);
-                rect.setAttribute('width', loc.width);
-                rect.setAttribute('height', loc.height);
-                rect.setAttribute('rx', Math.min(loc.width, loc.height) * 0.1);
-            
                 const label = g.querySelector('.map-location-label');
-                label.setAttribute('x', loc.x + loc.width / 2);
-                label.setAttribute('y', loc.y + loc.height / 2);
-                if (label.textContent !== loc.name) {
-                    label.textContent = loc.name;
+                
+                // 更新矩形位置和大小
+                if (rect) {
+                    rect.setAttribute('x', loc.x);
+                    rect.setAttribute('y', loc.y);
+                    rect.setAttribute('width', loc.width);
+                    rect.setAttribute('height', loc.height);
+                    rect.setAttribute('rx', Math.min(loc.width, loc.height) * 0.1);
                 }
             
+                // 更新标签位置和文本
+                if (label) {
+                    label.setAttribute('x', loc.x + loc.width / 2);
+                    label.setAttribute('y', loc.y + loc.height / 2);
+                    label.textContent = loc.name;
+                }
+                
+                // 设置当前地点样式
+                const isCurrentLocation = loc.name === protagonistLocationName;
+                g.classList.toggle('is-current-location', isCurrentLocation);
+                g.dataset.locationName = loc.name;
             },
-            createMapLocation(loc, protagonistLocationName, ns) {
-                const g = this.createSVGElement(ns, 'g', { 'class': 'map-location-group', 'data-location-name': loc.name });
+            
+            // 简化的元素创建方法 - 学习api.html
+            createMapLocationFast(loc, protagonistLocationName, ns) {
+                const g = this.createSVGElement(ns, 'g', { 
+                    'class': 'map-location-group', 
+                    'data-location-name': loc.name 
+                });
                 const rect = this.createSVGElement(ns, 'rect', { 'class': 'map-location-rect' });
                 const label = this.createSVGElement(ns, 'text', { 'class': 'map-location-label' });
-                g.append(rect, label);
-                this.updateMapLocation(g, loc, protagonistLocationName);
+                
+                g.appendChild(rect);
+                g.appendChild(label);
+                
+                this.updateMapLocationFast(g, loc, protagonistLocationName);
                 return g;
             },
             renderImportantCharacters(data, elements, filterText = '') {
