@@ -1749,10 +1749,8 @@
 
             try {
                 const rawData = await this.config.api.getData();
-                if (!rawData || typeof rawData !== 'object' || Object.keys(rawData).length === 0) {
-                    throw new Error("获取到的远端数据无效或为空。");
-                }
-                
+                // The check for invalid/empty rawData is now handled inside DataProcessor.process,
+                // which will throw an error caught by this block.
                 this.processAndRenderData(rawData, isSilent);
 
             } catch (error) {
@@ -1985,62 +1983,103 @@
         DataProcessor: {
             process(json) {
                 const tablesByName = {};
-                if (!json || typeof json !== 'object') { throw new Error("无效的JSON数据。"); }
-                for (const sheetId in json) { if (json[sheetId]?.name) tablesByName[json[sheetId].name] = json[sheetId]; }
-                
-                const data = { title: '', time: '', locations: [], importantCharacters: [], externalAreas: [], skills: [], inventory: [], tasks: [], protagonist: {}, protagonistLocationName: '', protagonistCanMove: true};
-                
-                const globalTable = tablesByName['全局数据表']?.content || [];
-                if (globalTable.length > 1 && globalTable[1]) {
-                    const [ , title, time, areas ] = globalTable[1];
-                    data.title = title || '未知地图';
-                    data.time = time || '未知时间';
-                    data.externalAreas = (areas || '').split(';').map(s => s.trim()).filter(Boolean);
+                if (!json || typeof json !== 'object' || Object.keys(json).length === 0) {
+                    throw new Error("获取到的远端数据无效或为空。");
                 }
 
-                const pInfoTable = tablesByName['主角信息']?.content || [];
-                const pStatusTable = tablesByName['主角状态']?.content || [];
+                for (const sheetId in json) {
+                    if (Object.prototype.hasOwnProperty.call(json, sheetId) && json[sheetId] && json[sheetId].name) {
+                        tablesByName[json[sheetId].name] = json[sheetId];
+                    }
+                }
+
+                const data = { title: '', time: '', locations: [], importantCharacters: [], externalAreas: [], skills: [], inventory: [], tasks: [], protagonist: {}, protagonistLocationName: '', protagonistCanMove: true };
+
+                const globalTable = tablesByName['全局数据表'] ? tablesByName['全局数据表'].content : [];
+                if (globalTable && globalTable.length > 1 && globalTable[1]) {
+                    const global = globalTable[1];
+                    data.title = global[1] || '未知地图';
+                    data.time = global[2] || '未知时间';
+                    data.externalAreas = (global[3] || '').split(';').map(s => s.trim()).filter(Boolean);
+                }
+
+                const pInfoTable = tablesByName['主角信息'] ? tablesByName['主角信息'].content : [];
+                const pStatusTable = tablesByName['主角状态'] ? tablesByName['主角状态'].content : [];
                 const pData = { isProtagonist: true, name: '主角', details: { attributes: {} }, interactions: [] };
-                if (pInfoTable.length > 1 && pInfoTable[1]) Object.assign(pData, { name: pInfoTable[1][1], details: { genderAge:pInfoTable[1][2], appearance:pInfoTable[1][3], profession:pInfoTable[1][4], backstory:pInfoTable[1][5], personality:pInfoTable[1][6] }});
+
+                if (pInfoTable.length > 1 && pInfoTable[1]) {
+                    const pInfo = pInfoTable[1];
+                    pData.name = pInfo[1] || '主角';
+                    pData.details = { genderAge: pInfo[2], appearance: pInfo[3], profession: pInfo[4], backstory: pInfo[5], personality: pInfo[6] };
+                }
                 if (pStatusTable.length > 1 && pStatusTable[1]) {
-                    const [ , status, canMove, money, location, , p6,p7,p8,p9,p10,p11, ...interactions ] = pStatusTable[1];
-                    Object.assign(pData.details, { status, money: money || '0', attributes: {'力量':p6,'智力':p7,'敏捷':p8,'体质':p9,'魅力':p10,'感知':p11} });
-                    data.protagonistCanMove = !(String(canMove).trim().toLowerCase() === '否');
-                    pData.currentLocationName = location || '';
-                    pData.interactions = interactions.filter(Boolean);
+                    const pStatus = pStatusTable[1];
+                    pData.details.status = pStatus[1];
+                    data.protagonistCanMove = !(pStatus[2] && String(pStatus[2]).trim().toLowerCase() === '否');
+                    pData.details.money = pStatus[3] || '0';
+                    pData.currentLocationName = pStatus[4] || '';
+                    pData.details.attributes = { '力量': pStatus[6], '智力': pStatus[7], '敏捷': pStatus[8], '体质': pStatus[9], '魅力': pStatus[10], '感知': pStatus[11] };
+                    pData.interactions = [pStatus[12], pStatus[13], pStatus[14], pStatus[15]].filter(Boolean);
                 }
                 data.protagonist = pData;
                 data.importantCharacters.push(pData);
-                
-                (tablesByName['重要人物表']?.content || []).slice(1).forEach(r => {
+
+                const importantCharsTable = tablesByName['重要人物表'] ? tablesByName['重要人物表'].content : [];
+                importantCharsTable.slice(1).forEach(r => {
                     if (!r || !r[1]) return;
-                    const [ , name, genderAge, appearance, profession, personality, backstory, relationship, status, items, abilities, affinity, thoughts, ...interactions ] = r;
-                    data.importantCharacters.push({ name, genderAge, appearance, profession, personality, backstory, relationship, status, items, abilities, affinity, thoughts, interactions: interactions.slice(0, 4).filter(Boolean), isAway: ['true', '是'].includes(String(r[17] || '').trim().toLowerCase()), awayTurns: r[18], isPlotCritical: r[19], avatar: r[20]});
+                    const isAwayStr = String(r[17] || '').trim().toLowerCase();
+                    data.importantCharacters.push({
+                        name: r[1], genderAge: r[2], appearance: r[3], profession: r[4], personality: r[5], backstory: r[6],
+                        relationship: r[7], status: r[8], items: r[9], abilities: r[10], affinity: r[11], thoughts: r[12],
+                        interactions: [r[13], r[14], r[15], r[16]].filter(Boolean),
+                        isAway: isAwayStr === 'true' || isAwayStr === '是', // Retain boolean conversion
+                        awayTurns: r[18], isPlotCritical: r[19], avatar: r[20]
+                    });
                 });
 
-                (tablesByName['主角技能表']?.content || []).slice(1).forEach(r => r?.[1] && data.skills.push({ name: r[1], effect: r[2], level: r[3], mastery: r[4] }));
-                (tablesByName['背包物品表']?.content || []).slice(1).forEach(r => r?.[1] && data.inventory.push({ name: r[1], quantity: r[2], description: r[3], isNew: r[4] === 'true' }));
-                (tablesByName['任务与事件表']?.content || []).slice(1).forEach(r => r?.[1] && data.tasks.push({ name: r[1], description: r[2], progress: r[5], isUpdated: r[6] === 'true' }));
+                const skillsTable = tablesByName['主角技能表'] ? tablesByName['主角技能表'].content : [];
+                skillsTable.slice(1).forEach(r => { if (r && r[1]) data.skills.push({ name: r[1], effect: r[2], level: r[3], mastery: r[4] }); });
+
+                const inventoryTable = tablesByName['背包物品表'] ? tablesByName['背包物品表'].content : [];
+                inventoryTable.slice(1).forEach(r => { if (r && r[1]) data.inventory.push({ name: r[1], quantity: r[2], description: r[3], isNew: r[4] === 'true' }); });
+
+                const tasksTable = tablesByName['任务与事件表'] ? tablesByName['任务与事件表'].content : [];
+                tasksTable.slice(1).forEach(r => { if (r && r[1]) data.tasks.push({ name: r[1], description: r[2], progress: r[5], isUpdated: r[6] === 'true' }); });
 
                 const subLocs = {};
-                (tablesByName['次级地点表']?.content || []).slice(1).forEach(r => { if(r?.[2] && r?.[1]) { if(!subLocs[r[2]]) subLocs[r[2]] = []; subLocs[r[2]].push({ name: r[1], description: r[3], elements: [] }); }});
-                
-                (tablesByName['地图元素表']?.content || []).slice(1).forEach(r => {
-                    if(!r?.[1] || !r?.[4]) return;
-                    for (const mainLocName in subLocs) {
-                        const sub = subLocs[mainLocName].find(i => i.name === r[4]);
-                        if (sub) {
-                            sub.elements.push({ name: r[1], type: r[2], description: r[3], interactions: [r[7], r[8], r[9], r[10]].filter(Boolean) });
-                            break;
+                const subLocsTable = tablesByName['次级地点表'] ? tablesByName['次级地点表'].content : [];
+                subLocsTable.slice(1).forEach(r => {
+                    if (r && r[2] && r[1]) {
+                        if (!subLocs[r[2]]) subLocs[r[2]] = [];
+                        subLocs[r[2]].push({ name: r[1], description: r[3], elements: [] });
+                    }
+                });
+
+                const elementsTable = tablesByName['地图元素表'] ? tablesByName['地图元素表'].content : [];
+                elementsTable.slice(1).forEach(r => {
+                    if (r && r[1] && r[4]) {
+                        for (const mainLocName in subLocs) {
+                            const sub = subLocs[mainLocName].find(i => i.name === r[4]);
+                            if (sub) {
+                                sub.elements.push({ name: r[1], type: r[2], description: r[3], interactions: [r[7], r[8], r[9], r[10]].filter(Boolean) });
+                                break;
+                            }
                         }
                     }
                 });
 
-                (tablesByName['主要地点表']?.content || []).slice(1).forEach(r => {
-                    if(!r?.[1]) return;
-                    const [x, y, w, h] = [r[2], r[3], r[4], r[5]].map(v => parseInt(v));
-                    if([x, y, w, h].every(v => !isNaN(v))) {
-                        data.locations.push({ name: r[1], x, y, width: w, height: h, type: r[6], description: r[7], subLocations: subLocs[r[1]] || [] });
+                const mainLocsTable = tablesByName['主要地点表'] ? tablesByName['主要地点表'].content : [];
+                mainLocsTable.slice(1).forEach(r => {
+                    if (r && r[1]) {
+                        const x = parseInt(r[2]), y = parseInt(r[3]), w = parseInt(r[4]), h = parseInt(r[5]);
+                        if (!isNaN(x) && !isNaN(y) && !isNaN(w) && !isNaN(h)) {
+                            data.locations.push({
+                                name: r[1], x: x, y: y, width: w, height: h,
+                                type: r[6], // Retain type for UI
+                                description: r[7],
+                                subLocations: subLocs[r[1]] || []
+                            });
+                        }
                     }
                 });
 
