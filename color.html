@@ -11,12 +11,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>恋爱冒险地图</title>
     <meta name="darkreader-lock">
-
     <link rel="preconnect" href="https://fontsapi.zeoseven.com" crossorigin>
-        
 <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 <script src="https://cdn.cbd.int/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
-
 <style>
     @import url("https://fontsapi.zeoseven.com/214/main/result.css");
     @import url("https://fontsapi.zeoseven.com/480/main/result.css");
@@ -329,7 +326,7 @@
         stroke-linecap: round;
         stroke-linejoin: round;
         transition: all var(--transition-normal);
-        font-size: clamp(16px, calc(sqrt(var(--room-area, 25000)) * 0.08px), 40px);
+        font-size: clamp(22px, calc(sqrt(var(--room-area, 25000)) * 0.08px), 40px);
     }
     html:not([data-theme='dark']) .map-location-label {
         fill: var(--c-text-secondary);
@@ -633,8 +630,6 @@
         opacity: 1;
         transform: scale(1);
     }
-
-
     .partner-button-list, 
     .external-area-buttons,
     #important-character-buttons,
@@ -643,14 +638,11 @@
         overflow: hidden;
         padding-top: 4px;
     }
-
-
     .partner-button-list, 
     .external-area-buttons {
         scrollbar-width: none;
         -ms-overflow-style: none;
     }
-
     .partner-button-list::-webkit-scrollbar,
     .external-area-buttons::-webkit-scrollbar {
         display: none;
@@ -668,6 +660,35 @@
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
     @media (prefers-contrast: high) { :root, html[data-theme='dark'] { --c-border-primary: currentColor; --c-text-primary: CanvasText; --c-text-secondary: CanvasText; --c-background-primary: Canvas; --c-background-secondary: Canvas; --c-background-tertiary: Canvas; --c-accent-primary: LinkText; --c-accent-secondary: LinkText; } }
     
+    /* 功能 1: 移动端布局切换 */
+    .mobile-only {
+        display: none;
+    }
+    @media (max-width: 768px) {
+        .mobile-only {
+            display: inline-flex;
+        }
+    }
+    #visual-map-container.layout-mode-grid #visual-map { display: none; }
+    #visual-map-container.layout-mode-grid .mobile-grid-layout { display: grid; }
+    #visual-map-container.layout-mode-grid .map-custom-controls { display: none; }
+
+    #visual-map-container.layout-mode-map #visual-map { display: block; }
+    #visual-map-container.layout-mode-map .mobile-grid-layout { display: none; }
+    #visual-map-container.layout-mode-map .map-custom-controls { display: flex; }
+
+    /* 功能 2: 桌面端字体放大 */
+    @media (max-width: 768px) {
+        #toggle-label-size-btn {
+            display: none;
+        }
+    }
+
+    .desktop-labels-enlarged .map-location-label {
+        font-size: calc(var(--original-font-size, 20px) * 3);
+        stroke-width: calc(var(--original-stroke-width, 4px) * 3);
+    }
+
     /* 九宫格移动端布局 */
     .mobile-grid-layout {
         display: none;
@@ -779,7 +800,6 @@
         /* 移动端动画性能优化 - 精简动画效果 */
         /* 禁用复杂的3D变换和弹跳动画 */
         * {
-            transform: none !important;
             will-change: auto !important;
             transition-duration: 0.15s !important; /* 统一缩短动画时间 */
             transition-timing-function: ease !important; /* 简化缓动函数 */
@@ -922,6 +942,10 @@
                 <h2 id="map-title"></h2>
                 <div class="header-info"><span id="map-time"></span></div>
                 <div class="top-right-buttons">
+                    <button id="mobile-layout-toggle-btn" class="partner-button mobile-only" title="切换视图">
+                        <i class="fas fa-th-large icon-grid"></i>
+                        <i class="fas fa-map icon-map" style="display:none;"></i>
+                    </button>
                     <button id="theme-toggle-btn" class="partner-button" title="切换主题">
                         <i class="fas fa-sun"></i> 
                     </button>
@@ -994,6 +1018,7 @@
                 <div class="map-custom-controls">
                     <button id="zoom-in-btn" title="放大"><i class="fas fa-plus"></i></button>
                     <button id="zoom-out-btn" title="缩小"><i class="fas fa-minus"></i></button>
+                    <button id="toggle-label-size-btn" title="切换标签大小"><i class="fas fa-text-height"></i></button>
                     <button id="reset-zoom-btn" title="重置视图"><i class="fas fa-expand"></i></button>
                 </div>
             </div>
@@ -1004,6 +1029,12 @@
         </div>
     </div>
     
+    <div id="character-modal" class="modal-overlay hidden"><div class="modal-dialog character-modal-dialog"><button class="close-modal-button">&times;</button><h4 id="modal-character-name"></h4><div id="modal-character-description" class="modal-content"></div><div id="modal-interaction-options" class="interaction-options-grid"></div></div></div>
+    <div id="skill-modal" class="modal-overlay hidden"><div class="modal-dialog shop-modal-dialog"><button class="close-modal-button">&times;</button><h4><i class="fas fa-book"></i> 技能</h4><div id="skill-items-container"></div></div></div>
+    <div id="inventory-modal" class="modal-overlay hidden"><div class="modal-dialog inventory-modal-dialog"><button class="close-modal-button">&times;</button><h4><i class="fas fa-briefcase"></i> 背包</h4><div id="inventory-items-container"></div></div></div>
+    <div id="task-modal" class="modal-overlay hidden"><div class="modal-dialog task-modal-dialog"><button class="close-modal-button">&times;</button><h4><i class="fas fa-tasks"></i> 当前任务</h4><div id="task-items-container"></div></div></div>
+    <div id="confirm-modal" class="modal-overlay hidden"><div class="modal-dialog confirm-modal-dialog"><h4>请确认操作</h4><div id="confirm-modal-text" class="modal-content"></div><div class="confirm-modal-buttons"><button id="confirm-modal-cancel-btn" class="interaction-button">取消</button><button id="confirm-modal-confirm-btn" class="interaction-button confirm">确认</button></div></div></div>
+    <div id="alert-modal" class="modal-overlay hidden"><div class="modal-dialog confirm-modal-dialog"><h4>提示</h4><div id="alert-modal-text" class="modal-content"></div><div class="confirm-modal-buttons"><button id="alert-modal-ok-btn" class="interaction-button confirm">好的</button></div></div></div>
     <div id="character-modal" class="modal-overlay hidden"><div class="modal-dialog character-modal-dialog"><button class="close-modal-button">&times;</button><h4 id="modal-character-name"></h4><div id="modal-character-description" class="modal-content"></div><div id="modal-interaction-options" class="interaction-options-grid"></div></div></div>
     <div id="skill-modal" class="modal-overlay hidden"><div class="modal-dialog shop-modal-dialog"><button class="close-modal-button">&times;</button><h4><i class="fas fa-book"></i> 技能</h4><div id="skill-items-container"></div></div></div>
     <div id="inventory-modal" class="modal-overlay hidden"><div class="modal-dialog inventory-modal-dialog"><button class="close-modal-button">&times;</button><h4><i class="fas fa-briefcase"></i> 背包</h4><div id="inventory-items-container"></div></div></div>
@@ -1196,7 +1227,10 @@
         },
         state: {
             mapData: null, panZoomInstance: null, isDragging: false, touchStartTarget: null, zoomInterval: null,
-            layoutWorker: null, isMobile: false, performanceMonitor: { startTime: 0, renderTime: 0, memoryUsage: 0 }
+            layoutWorker: null, isMobile: false, performanceMonitor: { startTime: 0, renderTime: 0, memoryUsage: 0 },
+            mobileLayoutMode: 'grid', // 'grid' or 'map'
+            isMobileMapInitialized: false,
+            isDesktopLabelEnlarged: false
         },
         elements: {},
 
@@ -1205,30 +1239,35 @@
             this.initialized = true;
             console.log("MapApp.init() - 核心应用初始化开始。");
             this.detectMobile();
+            // 从localStorage恢复状态
+            try {
+                this.state.mobileLayoutMode = localStorage.getItem('mobileLayoutMode') || 'grid';
+                this.state.isDesktopLabelEnlarged = (localStorage.getItem('desktopLabelsEnlarged') === 'true');
+            } catch (e) {
+                console.warn('无法从localStorage恢复状态');
+            }
+
             this.initPerformanceMonitor();
-            this.cacheElements(); 
+            this.cacheElements();
             this.bindEvents();
+            this.applyDesktopLabelSize(); // 应用初始字体大小
             this.initLayoutWorker();
             this.loadDataAndRender(); // First load
             
-            // 设置实时数据更新回调 - 学习api.html的完全依赖回调策略
             this.setupDataUpdateCallback();
             
-            // 设置备用事件监听器
             this.setupBackupEventListener();
             
             console.log(`[MapApp] 初始化完成 - 使用纯回调驱动模式，无轮询`);
         },
         
         detectMobile() {
-            // 检测移动设备
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
                              window.innerWidth <= 768 || 
                              (window.matchMedia && window.matchMedia("(max-width: 768px)").matches);
             
             this.state.isMobile = isMobile;
             
-            // 移动端性能优化
             if (isMobile) {
                 this.optimizeForMobile();
             }
@@ -1336,16 +1375,31 @@
                 return;
             }
             
-            console.log(`[MapApp] 切换到${this.state.isMobile ? '移动端' : '桌面端'}布局模式`);
+            console.log(`[MapApp] 更新布局模式: isMobile=${this.state.isMobile}, mobileLayoutMode=${this.state.mobileLayoutMode}`);
             
             if (this.state.isMobile) {
                 mapInterface.classList.add('mobile-mode');
-                visualMapContainer.classList.add('mobile-grid-mode');
-                this.renderMobileGrid();
-            } else {
+                
+                if (this.state.mobileLayoutMode === 'grid') {
+                    visualMapContainer.classList.add('layout-mode-grid');
+                    visualMapContainer.classList.remove('layout-mode-map');
+                    this.renderMobileGrid();
+                } else { // 'map' mode
+                    visualMapContainer.classList.add('layout-mode-map');
+                    visualMapContainer.classList.remove('layout-mode-grid');
+                    
+                    this.Renderer.renderMap(this.state.mapData, this.elements.visualMap, this.config);
+                    
+                    // Pan-zoom is now initialized within Renderer.renderMap to avoid race conditions.
+                    // We still need to track if it's the first time for mobile.
+                    if (!this.state.isMobileMapInitialized) {
+                        this.state.isMobileMapInitialized = true;
+                    }
+                }
+                this.updateMobileLayoutToggleButton();
+            } else { // Desktop mode
                 mapInterface.classList.remove('mobile-mode');
-                visualMapContainer.classList.remove('mobile-grid-mode');
-                // 重新渲染SVG地图
+                visualMapContainer.classList.remove('layout-mode-grid', 'layout-mode-map');
                 if (this.state.mapData) {
                     this.Renderer.renderMap(this.state.mapData, this.elements.visualMap, this.config);
                 }
@@ -1414,20 +1468,12 @@
         
         renderMobileGrid() {
             if (!this.state.mapData || !this.state.isMobile) return;
-            
             const mobileGrid = document.getElementById('mobile-grid-layout');
             if (!mobileGrid) return;
-            
             const locations = this.state.mapData.locations || [];
             const gridItems = mobileGrid.querySelectorAll('.mobile-grid-item');
-            
-            // 使用智能中心式排列算法
             const sortedLocations = this.sortLocationsByImportance(locations);
-            
-            // 重新排列：确保按照算法返回的顺序正确显示
             const gridPositionMap = this.createGridPositionMap(sortedLocations);
-            
-            // 清空所有格子
             gridItems.forEach((item, gridIndex) => {
                 const nameEl = item.querySelector('.mobile-grid-item-name');
                 const iconEl = item.querySelector('.mobile-grid-item-icon i');
@@ -1437,32 +1483,19 @@
                 item.dataset.locationName = '';
                 nameEl.textContent = '';
                 countEl.textContent = '';
-                
-                // 清除旧的点击事件处理器
                 item.onclick = null;
                 item.removeEventListener('click', item._clickHandler);
-                
-                // 查找应该在这个网格位置显示的地点
                 const locationForThisPosition = gridPositionMap[gridIndex];
-                
                 if (locationForThisPosition) {
                     nameEl.textContent = locationForThisPosition.name;
                     item.dataset.locationName = locationForThisPosition.name;
-                    
-                    // 设置图标
                     this.setLocationIcon(iconEl, locationForThisPosition);
-                    
-                    // 设置子地点数量
                     if (locationForThisPosition.subLocations && locationForThisPosition.subLocations.length > 0) {
                         countEl.textContent = locationForThisPosition.subLocations.length.toString();
                     }
-                    
-                    // 标记当前地点
                     if (locationForThisPosition.name === this.state.mapData.protagonistLocationName) {
                         item.classList.add('is-current');
                     }
-                    
-                    // 添加新的点击事件处理器
                     const clickHandler = (e) => {
                         e.preventDefault();
                         e.stopPropagation();
@@ -1481,42 +1514,27 @@
         },
         
         createGridPositionMap(allLocations) {
-            // 基于XY坐标的智能九宫格映射
-            // 布局：0 1 2
-            //      3 4 5  
-            //      6 7 8
             const positionMap = {};
             const protagonist = this.state.mapData.protagonistLocationName;
-            
-            // 找到当前地点作为中心参考点
             const currentLocation = allLocations.find(loc => loc.name === protagonist);
             
             if (!currentLocation) {
                 console.log('[九宫格坐标映射] 未找到当前地点，使用传统映射');
                 return this.createGridPositionMapTraditional(allLocations);
             }
-            
-            // 当前地点放在中心
             positionMap[4] = currentLocation;
             console.log(`[九宫格坐标映射] 位置4(中心): ${currentLocation.name} (${currentLocation.x}, ${currentLocation.y}) - 当前地点`);
-            
-            // 获取其他地点并按坐标分配到九宫格
             const otherLocations = allLocations.filter(loc => loc.name !== protagonist);
             
             if (otherLocations.length === 0) {
                 return positionMap;
             }
-            
-            // 计算相对于当前地点的方向和距离
             const locationWithDirections = otherLocations.map(loc => {
                 const relativeX = loc.x - currentLocation.x;
                 const relativeY = loc.y - currentLocation.y;
                 const distance = Math.sqrt(relativeX * relativeX + relativeY * relativeY);
-                
-                // 计算角度（0度为正右方，顺时针）
                 let angle = Math.atan2(relativeY, relativeX) * 180 / Math.PI;
                 if (angle < 0) angle += 360;
-                
                 return {
                     location: loc,
                     relativeX,
@@ -1526,8 +1544,6 @@
                     gridPosition: this.calculateGridPosition(relativeX, relativeY)
                 };
             });
-            
-            // 按网格位置分组
             const positionGroups = {};
             locationWithDirections.forEach(item => {
                 const pos = item.gridPosition;
@@ -1536,45 +1552,30 @@
                 }
                 positionGroups[pos].push(item);
             });
-            
-            // 为每个网格位置选择最合适的地点
             Object.keys(positionGroups).forEach(pos => {
                 const group = positionGroups[pos];
                 
                 if (group.length === 1) {
-                    // 只有一个地点，直接分配
                     positionMap[pos] = group[0].location;
                     this.logPositionMapping(pos, group[0]);
                 } else {
-                    // 多个地点竞争同一位置，选择距离最近的或最重要的
                     const bestLocation = this.selectBestLocationForPosition(group);
                     positionMap[pos] = bestLocation.location;
                     this.logPositionMapping(pos, bestLocation);
-                    
-                    // 剩余地点分配到其他空位置
                     const remainingLocations = group.filter(item => item !== bestLocation);
                     this.redistributeRemainingLocations(remainingLocations, positionMap);
                 }
             });
-            
             return positionMap;
         },
-        
         calculateGridPosition(relativeX, relativeY) {
-            // 根据相对坐标计算应该放在九宫格的哪个位置
-            // 布局：0 1 2
-            //      3 4 5  
-            //      6 7 8
-            
-            // 判断主要方向
             const absX = Math.abs(relativeX);
             const absY = Math.abs(relativeY);
             
-            // 定义阈值，用于判断是否足够偏向某个方向
-            const threshold = 50; // 可以根据实际情况调整
+            const threshold = 50; 
             
-            let xDirection = 0; // -1: 左, 0: 中, 1: 右
-            let yDirection = 0; // -1: 上, 0: 中, 1: 下
+            let xDirection = 0; 
+            let yDirection = 0; 
             
             if (absX > threshold) {
                 xDirection = relativeX > 0 ? 1 : -1;
@@ -1583,47 +1584,34 @@
             if (absY > threshold) {
                 yDirection = relativeY > 0 ? 1 : -1;
             }
-            
-            // 映射到九宫格位置
             const positionMatrix = [
-                [0, 1, 2],  // 上排 (yDirection = -1)
-                [3, 4, 5],  // 中排 (yDirection = 0)
-                [6, 7, 8]   // 下排 (yDirection = 1)
+                [0, 1, 2],  
+                [3, 4, 5],  
+                [6, 7, 8]   
             ];
             
-            const row = yDirection + 1; // 转换为数组索引 (0, 1, 2)
-            const col = xDirection + 1; // 转换为数组索引 (0, 1, 2)
+            const row = yDirection + 1; 
+            const col = xDirection + 1; 
             
             return positionMatrix[row][col];
         },
-        
         selectBestLocationForPosition(locationGroup) {
-            // 从多个竞争同一位置的地点中选择最合适的
-            // 优先级：1. 距离较近 2. 有子地点的重要地点
-            
             return locationGroup.reduce((best, current) => {
                 const bestSubCount = best.location.subLocations?.length || 0;
                 const currentSubCount = current.location.subLocations?.length || 0;
-                
-                // 如果重要性相同，选择距离更近的
                 if (bestSubCount === currentSubCount) {
                     return current.distance < best.distance ? current : best;
                 }
-                
-                // 选择更重要的地点
                 return currentSubCount > bestSubCount ? current : best;
             });
         },
-        
         redistributeRemainingLocations(remainingLocations, positionMap) {
-            // 将剩余地点分配到空的位置
             const emptyPositions = [];
             for (let i = 0; i < 9; i++) {
                 if (i !== 4 && !positionMap[i]) { // 排除中心位置
                     emptyPositions.push(i);
                 }
             }
-            
             remainingLocations.forEach((item, index) => {
                 if (index < emptyPositions.length) {
                     const pos = emptyPositions[index];
@@ -1632,7 +1620,6 @@
                 }
             });
         },
-        
         logPositionMapping(pos, locationItem) {
             const positionName = this.getPositionName(pos);
             const loc = locationItem.location;
@@ -1640,9 +1627,7 @@
             const direction = `相对坐标(${Math.round(locationItem.relativeX)}, ${Math.round(locationItem.relativeY)})`;
             console.log(`[九宫格坐标映射] 位置${pos}(${positionName}): ${loc.name} - ${direction} ${subCount > 0 ? subCount + '个子地点' : '普通地点'}`);
         },
-        
         createGridPositionMapTraditional(allLocations) {
-            // 传统的重要性映射（备用方案）
             const positionMap = {};
             const protagonist = this.state.mapData.protagonistLocationName;
             const priorityPositions = [4, 1, 3, 5, 7, 0, 2, 6, 8];
@@ -1674,15 +1659,11 @@
             };
             return positionNames[gridIndex] || '未知';
         },
-        
         sortLocationsByImportance(locations) {
             const protagonist = this.state.mapData.protagonistLocationName;
-            
-            // 找到当前地点作为中心参考点
             const currentLocation = locations.find(loc => loc.name === protagonist);
             
             if (!currentLocation) {
-                // 如果没有当前地点，使用传统排序
                 console.log('[九宫格坐标排序] 未找到当前地点，使用传统排序');
                 return this.sortLocationsByImportanceTraditional(locations);
             }
@@ -1707,9 +1688,7 @@
                 return a.name.localeCompare(b.name, 'zh-CN');
             });
         },
-        
         setLocationIcon(iconEl, location) {
-            // 根据地点类型设置图标
             const iconMap = {
                 '住宅': 'fa-home',
                 '商店': 'fa-store',
@@ -1722,71 +1701,19 @@
                 '医院': 'fa-hospital',
                 '银行': 'fa-university'
             };
-            
             const defaultIcon = 'fa-map-marker-alt';
             const iconClass = iconMap[location.type] || defaultIcon;
             
             iconEl.className = `fas ${iconClass}`;
         },
-        
         handleMobileGridClick(location) {
-            // 确保没有拖拽状态干扰
             this.state.isDragging = false;
-            
             console.log(`[移动端九宫格] 处理地点点击: ${location.name}`);
-            
-            // 直接调用地点模态框打开方法
             this.UI.openMainLocationModal(location);
         },
         
         initLayoutWorker() {
-            // 简化版布局工作器 - 学习api.html的简单方法
             const workerCode = `
-                const applyOptimizedLayout = (locations, layoutConfig) => {
-                    if (locations.length < 2) return locations;
-                    const minSpacing = layoutConfig.minRoomSpacing || 25;
-                    const maxIterations = Math.min(20, locations.length * 2);
-                    
-                    for (let iter = 0; iter < maxIterations; iter++) {
-                        let hasCollision = false;
-                        
-                        for (let i = 0; i < locations.length - 1; i++) {
-                            for (let j = i + 1; j < locations.length; j++) {
-                                const a = locations[i], b = locations[j];
-                                const dx = (a.x + a.width / 2) - (b.x + b.width / 2);
-                                const dy = (a.y + a.height / 2) - (b.y + b.height / 2);
-                                const combinedHalfW = a.width / 2 + b.width / 2 + minSpacing;
-                                const combinedHalfH = a.height / 2 + b.height / 2 + minSpacing;
-                                const overlapX = combinedHalfW - Math.abs(dx);
-                                const overlapY = combinedHalfH - Math.abs(dy);
-                                
-                                if (overlapX > 0 && overlapY > 0) {
-                                    hasCollision = true;
-                                    const moveDistance = Math.min(overlapX, overlapY) * 0.6;
-                                    
-                                    if (overlapX < overlapY) {
-                                        const direction = dx > 0 ? 1 : -1;
-                                        a.x += moveDistance * direction * 0.5;
-                                        b.x -= moveDistance * direction * 0.5;
-                                    } else {
-                                        const direction = dy > 0 ? 1 : -1;
-                                        a.y += moveDistance * direction * 0.5;
-                                        b.y -= moveDistance * direction * 0.5;
-                                    }
-                                }
-                            }
-                        }
-                        
-                        if (!hasCollision) break;
-                    }
-                    return locations;
-                };
-
-            self.onmessage = function(e) {
-                const { locations, layoutConfig } = e.data;
-                const calculatedLocations = applyOptimizedLayout(locations, layoutConfig);
-                self.postMessage(calculatedLocations);
-            };
             `;
             const blob = new Blob([workerCode], { type: 'application/javascript' });
             this.state.layoutWorker = new Worker(URL.createObjectURL(blob));
@@ -1837,7 +1764,6 @@
                 }
             }
         },
-        
         processAndRenderData(rawData, isSilent = false) {
             this.state.mapData = this.DataProcessor.process(rawData);
             console.log('[MapApp] 数据处理完成，准备渲染...');
@@ -1850,9 +1776,7 @@
                 mapInterfaceEl.classList.add('show');
             }
         },
-        
         setupDataUpdateCallback() {
-            // 注册实时数据更新回调 - 学习自api.html的策略
             if (typeof parent !== 'undefined' && 
                 parent.stMemoryEnhancement && 
                 typeof parent.stMemoryEnhancement.registerTableUpdateCallback === 'function') {
@@ -1875,9 +1799,7 @@
                 return false;
             }
         },
-        
         setupBackupEventListener() {
-            // (可选备用) 监听标准的聊天更新事件 - 学习自api.html
             try {
                 if (typeof parent !== 'undefined' && 
                     parent.tavern_events && 
@@ -1898,28 +1820,21 @@
         },
         render(isSilent = false) {
             if (!this.state.mapData) return;
-            
-            // 开始性能监控
             const renderStart = performance.now();
             
             if (!isSilent && this.state.panZoomInstance) {
                 this.state.panZoomInstance.destroy();
                 this.state.panZoomInstance = null;
             }
-
             this.Renderer.renderHeader(this.state.mapData, this.elements);
             this.elements.characterSearchInput.value = '';
             this.Renderer.renderImportantCharacters(this.state.mapData, this.elements, '');
             this.Renderer.renderExternalAreas(this.state.mapData, this.elements);
-            
-            // 根据设备类型选择渲染方式
             if (this.state.isMobile) {
                 this.updateLayoutMode();
             } else {
                 this.Renderer.renderMap(this.state.mapData, this.elements.visualMap, this.config, isSilent);
             }
-            
-            // 更新性能监控
             const renderEnd = performance.now();
             this.state.performanceMonitor.renderTime = Math.round(renderEnd - renderStart);
             this.updatePerformanceMonitor();
@@ -1947,15 +1862,6 @@
                     panEnabled: true, zoomEnabled: true, pinchZoomEnabled: true, controlIconsEnabled: false,
                     dblClickZoomEnabled: false, zoomScaleSensitivity: 0.2, refreshRate: 'auto',
                     contain: false, center: true, minZoom: 0.3, maxZoom: 8,
-                    beforePan: function() {
-                        // 在触摸事件处理期间，通过 window.event 访问事件对象。
-                        // 如果检测到多于一个触摸点（例如双指缩放），则返回 false 来取消平移操作，
-                        // 从而优先处理缩放手势。
-                        if (window.event && window.event.touches && window.event.touches.length > 1) {
-                            return false;
-                        }
-                        // 对于其他情况（包括鼠标拖动），不返回任何内容以允许平移
-                    },
                     onPan: () => { this.state.isDragging = true; },
                     onReady: (pz) => setTimeout(() => { try { pz.fit(); pz.center(); } catch (e) {} }, 50),
                 });
@@ -1975,10 +1881,12 @@
                 if (closest('.close-modal-button')) this.UI.closeModal(closest('.modal-overlay').id);
                 else if (closest('#alert-modal-ok-btn')) this.UI.closeModal('alert-modal');
                 else if (closest('#confirm-modal-cancel-btn')) this.UI.closeModal('confirm-modal');
-                else if (closest('#reset-zoom-btn') && this.state.panZoomInstance) { this.state.panZoomInstance.fit(); this.state.panZoomInstance.center(); }
+                else if (closest('#reset-zoom-btn') && this.state.panZoomInstance) { this.state.panZoomInstance.resize(); this.state.panZoomInstance.fit(); this.state.panZoomInstance.center(); }
                 else if (closest('#skill-button')) this.UI.openSkillModal();
                 else if (closest('#inventory-button')) this.UI.openInventoryModal();
                 else if (closest('#task-button')) this.UI.openTaskModal();
+                else if (closest('#mobile-layout-toggle-btn')) this.handleMobileLayoutToggle();
+                else if (closest('#toggle-label-size-btn')) this.handleLabelSizeToggle();
             });
             this.elements.allModals.forEach(m => m.addEventListener('click', (e) => { if (e.target === m) this.UI.closeModal(m.id); }));
             this.elements.characterSearchInput.addEventListener('input', (e) => this.Renderer.renderImportantCharacters(this.state.mapData, this.elements, e.target.value));
@@ -1993,14 +1901,12 @@
                     this.state.zoomInterval = setInterval(zoomFn, 100);
                 }
             };
-
             const stopZoom = () => {
                 if (this.state.zoomInterval) {
                     clearInterval(this.state.zoomInterval);
                     this.state.zoomInterval = null;
                 }
             };
-
             if(zoomInBtn) {
                 zoomInBtn.addEventListener('mousedown', () => startZoom(() => this.state.panZoomInstance.zoomIn()));
                 zoomInBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startZoom(() => this.state.panZoomInstance.zoomIn()); });
@@ -2009,13 +1915,11 @@
                 zoomOutBtn.addEventListener('mousedown', () => startZoom(() => this.state.panZoomInstance.zoomOut()));
                 zoomOutBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startZoom(() => this.state.panZoomInstance.zoomOut()); });
             }
-            
             const stopZoomEvents = ['mouseup', 'mouseleave', 'touchend'];
             stopZoomEvents.forEach(event => {
                 if(zoomInBtn) zoomInBtn.addEventListener(event, stopZoom);
                 if(zoomOutBtn) zoomOutBtn.addEventListener(event, stopZoom);
             });
-            
             const handleMapClick = (locGroup) => {
                 if (!locGroup) return;
                 const locData = this.state.mapData.locations.find(loc => loc.name === locGroup.dataset.locationName);
@@ -2023,20 +1927,16 @@
             };
             
             this.elements.visualMap.addEventListener('mousedown', () => {
-                // isDragging is now managed by the click/touchend handlers to prevent race conditions.
             });
             this.elements.visualMap.addEventListener('touchstart', (e) => {
                 this.state.touchStartTarget = e.target;
-                // isDragging is now managed by the click/touchend handlers.
             }, { passive: true });
-
             this.elements.visualMap.addEventListener('click', (e) => {
                 if (!this.state.isDragging) {
                     handleMapClick(e.target.closest('.map-location-group'));
                 }
                 this.state.isDragging = false;
             });
-
             this.elements.visualMap.addEventListener('touchend', (e) => {
                 if (!this.state.isDragging) {
                     const targetGroup = this.state.touchStartTarget?.closest('.map-location-group');
@@ -2046,6 +1946,42 @@
                 this.state.touchStartTarget = null;
             });
         },
+        handleMobileLayoutToggle() {
+            this.state.mobileLayoutMode = (this.state.mobileLayoutMode === 'grid') ? 'map' : 'grid';
+            try {
+                localStorage.setItem('mobileLayoutMode', this.state.mobileLayoutMode);
+            } catch(e) { console.warn('无法保存移动端布局模式'); }
+            this.updateLayoutMode();
+        },
+        updateMobileLayoutToggleButton() {
+            const btn = document.getElementById('mobile-layout-toggle-btn');
+            if (!btn) return;
+            const gridIcon = btn.querySelector('.icon-grid');
+            const mapIcon = btn.querySelector('.icon-map');
+            if (!gridIcon || !mapIcon) return;
+
+            if (this.state.mobileLayoutMode === 'grid') {
+                gridIcon.style.display = 'none';
+                mapIcon.style.display = 'inline-block';
+            } else {
+                gridIcon.style.display = 'inline-block';
+                mapIcon.style.display = 'none';
+            }
+        },
+        handleLabelSizeToggle() {
+            this.state.isDesktopLabelEnlarged = !this.state.isDesktopLabelEnlarged;
+            try {
+                localStorage.setItem('desktopLabelsEnlarged', this.state.isDesktopLabelEnlarged);
+            } catch(e) { console.warn('无法保存桌面端标签大小状态'); }
+            this.applyDesktopLabelSize();
+        },
+
+        applyDesktopLabelSize() {
+            const container = this.elements.visualMapContainer;
+            if (!container) return;
+            container.classList.toggle('desktop-labels-enlarged', this.state.isDesktopLabelEnlarged);
+        },
+
         DataProcessor: {
             process(json) {
                 const tablesByName = {};
@@ -2079,7 +2015,7 @@
                 (tablesByName['重要人物表']?.content || []).slice(1).forEach(r => {
                     if (!r || !r[1]) return;
                     const [ , name, genderAge, appearance, profession, personality, backstory, relationship, status, items, abilities, affinity, thoughts, ...interactions ] = r;
-                    data.importantCharacters.push({ name, genderAge, appearance, profession, personality, backstory, relationship, status, items, abilities, affinity, thoughts, interactions: interactions.slice(0, 4).filter(Boolean), isAway: r[17] === 'true', awayTurns: r[18], isPlotCritical: r[19], avatar: r[20]});
+                    data.importantCharacters.push({ name, genderAge, appearance, profession, personality, backstory, relationship, status, items, abilities, affinity, thoughts, interactions: interactions.slice(0, 4).filter(Boolean), isAway: ['true', '是'].includes(String(r[17] || '').trim().toLowerCase()), awayTurns: r[18], isPlotCritical: r[19], avatar: r[20]});
                 });
 
                 (tablesByName['主角技能表']?.content || []).slice(1).forEach(r => r?.[1] && data.skills.push({ name: r[1], effect: r[2], level: r[3], mastery: r[4] }));
@@ -2123,19 +2059,13 @@
                     svgElement.setAttribute('viewBox', '0 0 800 600');
                     return;
                 }
-
-                // 使用优化的布局算法
                 this.applyOptimizedLayout(JSON.parse(JSON.stringify(data.locations)), config.layout)
                     .then(locations => {
                         const ns = "http://www.w3.org/2000/svg";
                         const bounds = this.calculateBounds(locations);
                         const padding = Math.max(bounds.width, bounds.height) * 0.1;
                         svgElement.setAttribute('viewBox', `${bounds.x - padding} ${bounds.y - padding} ${bounds.width + padding*2} ${bounds.height + padding*2}`);
-                
-                        // 确保渐变定义存在
                         this.ensureGradientDefs(svgElement, ns);
-                
-                        // 使用对象池优化元素创建和更新
                         this.optimizedElementUpdate(svgElement, locations, data.protagonistLocationName, ns);
                         
                         console.log("优化渲染完成。");
@@ -2151,7 +2081,6 @@
                     });
             },
             applyOptimizedLayout(locations, layoutConfig) {
-                // 简化的主线程布局计算 - 学习api.html的直接方法
                 if (locations.length < 2) return Promise.resolve(locations);
                 
                 const minSpacing = layoutConfig.minRoomSpacing || 25;
@@ -2192,8 +2121,6 @@
                 
                 return Promise.resolve(locations);
             },
-            
-            // 确保渐变定义存在
             ensureGradientDefs(svgElement, ns) {
                 if (!svgElement.querySelector('defs')) {
                     const defs = this.createSVGElement(ns, 'defs', {});
@@ -2201,16 +2128,9 @@
                     svgElement.prepend(defs);
                 }
             },
-            
-            // 简化元素更新 - 学习api.html的直接方法
             optimizedElementUpdate(svgElement, locations, protagonistLocationName, ns) {
-                // 清空并重新创建所有元素 - 更简单直接
                 svgElement.innerHTML = '';
-                
-                // 确保渐变定义存在
                 this.ensureGradientDefs(svgElement, ns);
-                
-                // 直接创建所有地点元素
                 locations.forEach(loc => {
                     const g = this.createMapLocationFast(loc, protagonistLocationName, ns);
                     svgElement.appendChild(g);
@@ -2224,12 +2144,9 @@
                 const minY = Math.min(...yCoords), maxY = Math.max(...yCoords);
                 return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
             },
-            // 简化的元素更新方法 - 学习api.html
             updateMapLocationFast(g, loc, protagonistLocationName) {
                 const rect = g.querySelector('.map-location-rect');
                 const label = g.querySelector('.map-location-label');
-                
-                // 更新矩形位置和大小
                 if (rect) {
                     rect.setAttribute('x', loc.x);
                     rect.setAttribute('y', loc.y);
@@ -2237,21 +2154,18 @@
                     rect.setAttribute('height', loc.height);
                     rect.setAttribute('rx', Math.min(loc.width, loc.height) * 0.1);
                 }
-            
-                // 更新标签位置和文本
                 if (label) {
                     label.setAttribute('x', loc.x + loc.width / 2);
                     label.setAttribute('y', loc.y + loc.height / 2);
                     label.textContent = loc.name;
+                    const style = window.getComputedStyle(label);
+                    label.style.setProperty('--original-font-size', style.fontSize);
+                    label.style.setProperty('--original-stroke-width', style.strokeWidth);
                 }
-                
-                // 设置当前地点样式
                 const isCurrentLocation = loc.name === protagonistLocationName;
                 g.classList.toggle('is-current-location', isCurrentLocation);
                 g.dataset.locationName = loc.name;
             },
-            
-            // 简化的元素创建方法 - 学习api.html
             createMapLocationFast(loc, protagonistLocationName, ns) {
                 const g = this.createSVGElement(ns, 'g', { 
                     'class': 'map-location-group', 
@@ -2375,14 +2289,10 @@
             staggeredEntrance(containerSel, itemSel) {
                 const container = document.querySelector(containerSel);
                 if (!container) return;
-
                 const items = container.querySelectorAll(itemSel);
                 items.forEach((item, index) => {
-                    // ✨ 优化：先清除旧的动画类和样式，确保每次都是干净的开始
                     item.classList.remove('list-item-enter', 'list-item-enter-active');
                     item.style.transitionDelay = '';
-
-                    // 应用新的入场动画
                     requestAnimationFrame(() => {
                         item.classList.add('list-item-enter');
                         requestAnimationFrame(() => {
@@ -2394,7 +2304,6 @@
                     });
                 });
             },
-
             createItemListModal(modalId, containerId, items, emptyText, itemClass, itemFactory) {
                 this.openModal(modalId);
                 const container = document.getElementById(containerId);
@@ -2402,7 +2311,6 @@
                 container.replaceChildren(fragment);
                 this.staggeredEntrance(`#${containerId}`, `.${itemClass}`);
             },
-
             openSkillModal() {
                 this.createItemListModal(
                     'skill-modal',
@@ -2416,7 +2324,6 @@
                     })
                 );
             },
-
             openInventoryModal() {
                 this.createItemListModal(
                     'inventory-modal',
@@ -2430,7 +2337,6 @@
                     })
                 );
             },
-
             createItemList(items, emptyText, itemClass, itemFactory) {
                 const fragment = document.createDocumentFragment();
                 if (!items || items.length === 0) {
@@ -2460,7 +2366,6 @@
                 }
                 return fragment;
             },
-            
             openTaskModal() {
                 this.openModal('task-modal');
                 const container = document.getElementById('task-items-container');
@@ -2666,7 +2571,6 @@
                 }
             },
         },
-
         Actions: {
             sendRequest(actionText, command, event) {
                 const btn = event?.target.closest('button');
@@ -2681,23 +2585,11 @@
             interactWith(target, action, e) { this.sendRequest(`对 ${target} 执行: ${action}`, `<request:{{user}}对${target}执行互动:${action}>`, e); }
         }
     };
-    
-
-
-
-
-    
-    /**
-     * =========================================================================
-     * 安全初始化器
-     * =========================================================================
-     */
 const SafeMapAppInitializer = {
     initialized: false,
     checkInterval: null,
     checkCount: 0,
     maxChecks: 3, 
-
     init() {
         console.log('[MapApp] 安全初始化器启动');
         
@@ -2723,7 +2615,6 @@ const SafeMapAppInitializer = {
             startChecking();
         }
     },
-    
     checkAndInit() {
         if (this.initialized) {
             this.stopChecking();
@@ -2749,7 +2640,6 @@ const SafeMapAppInitializer = {
             this.stopChecking(); 
             return;
         }
-
         if (this.checkCount > this.maxChecks) {
             console.log('[MapApp] 达到最大检查次数，停止自动初始化。');
             if (!this.initialized) {
@@ -2758,7 +2648,6 @@ const SafeMapAppInitializer = {
             this.stopChecking();
         }
     },
-
     isWelcomePage() {
         try {
             if (window.self === window.top) return false;
@@ -2780,7 +2669,6 @@ const SafeMapAppInitializer = {
             return true;
         }
     },
-
     performInitialization() {
         try {
             this.initialized = true;
@@ -2806,7 +2694,6 @@ const SafeMapAppInitializer = {
         this.onPageChange();
     }
 };
-
     document.addEventListener('DOMContentLoaded', () => {
         console.log('[MapApp] DOM 已加载，开始统一初始化流程。');
         DOMManager.init();
