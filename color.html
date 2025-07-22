@@ -672,11 +672,12 @@
     .mobile-grid-layout {
         display: none;
         grid-template-columns: repeat(3, 1fr);
-        grid-template-rows: repeat(3, minmax(100px, 1fr)); /* 固定最小高度 */
+        grid-template-rows: repeat(3, 100px); /* 固定高度，不使用1fr */
         gap: 8px;
         padding: 15px;
-        height: 100%;
-        min-height: 350px; /* 增加整体最小高度 */
+        height: 340px; /* 固定总高度：3行×100px + 2×8px间距 + 2×15px内边距 = 346px，留点余量 */
+        min-height: 340px;
+        max-height: 340px; /* 防止过高 */
         box-sizing: border-box;
     }
     
@@ -869,8 +870,9 @@
         
         /* 移动端使用九宫格布局 */
         #visual-map-container.mobile-grid-mode {
-            height: 65vh; /* 稍微增加高度以适应更大的格子 */
-            min-height: 350px; /* 增加最小高度 */
+            height: 360px; /* 稍微增加容器高度以适应固定尺寸的格子 */
+            min-height: 360px;
+            max-height: 360px; /* 防止过高 */
             padding: 0;
             background: var(--c-background-secondary);
         }
@@ -1436,6 +1438,10 @@
                 nameEl.textContent = '';
                 countEl.textContent = '';
                 
+                // 清除旧的点击事件处理器
+                item.onclick = null;
+                item.removeEventListener('click', item._clickHandler);
+                
                 // 查找应该在这个网格位置显示的地点
                 const locationForThisPosition = gridPositionMap[gridIndex];
                 
@@ -1456,11 +1462,18 @@
                         item.classList.add('is-current');
                     }
                     
-                    // 添加点击事件
-                    item.onclick = () => this.handleMobileGridClick(locationForThisPosition);
+                    // 添加新的点击事件处理器
+                    const clickHandler = (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log(`[移动端九宫格] 点击地点: ${locationForThisPosition.name}`);
+                        this.handleMobileGridClick(locationForThisPosition);
+                    };
+                    
+                    item._clickHandler = clickHandler;
+                    item.addEventListener('click', clickHandler);
                 } else {
                     item.classList.add('is-empty');
-                    item.onclick = null;
                 }
             });
             
@@ -1717,9 +1730,12 @@
         },
         
         handleMobileGridClick(location) {
-            if (this.state.isDragging) return;
+            // 确保没有拖拽状态干扰
+            this.state.isDragging = false;
             
-            // 与原有的地点点击逻辑保持一致
+            console.log(`[移动端九宫格] 处理地点点击: ${location.name}`);
+            
+            // 直接调用地点模态框打开方法
             this.UI.openMainLocationModal(location);
         },
         
@@ -2311,7 +2327,14 @@
                     document.body.classList.remove('modal-open');
                     document.body.style.removeProperty('--scrollbar-width');
                     
-                    if (window.MapApp && window.MapApp.state.panZoomInstance) {
+                    // 移动端特殊处理：确保不干扰后续点击
+                    if (window.MapApp && window.MapApp.state.isMobile) {
+                        console.log('[MapApp] 移动端模态框关闭，重置拖拽状态');
+                        window.MapApp.state.isDragging = false;
+                        window.MapApp.state.touchStartTarget = null;
+                    }
+                    
+                    if (window.MapApp && window.MapApp.state.panZoomInstance && !window.MapApp.state.isMobile) {
                         setTimeout(() => {
                             try {
                                 window.MapApp.state.panZoomInstance.resize();
