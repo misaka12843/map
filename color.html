@@ -1363,7 +1363,7 @@
             // 这里可以恢复到原始实现
         },
         
-        updateLayoutMode() {
+        updateLayoutMode(isSilent = false) {
             const mapInterface = document.querySelector('.map-interface');
             const visualMapContainer = this.elements.visualMapContainer;
             
@@ -1385,7 +1385,7 @@
                     visualMapContainer.classList.add('layout-mode-map');
                     visualMapContainer.classList.remove('layout-mode-grid');
                     
-                    this.Renderer.renderMap(this.state.mapData, this.elements.visualMap, this.config);
+                    this.Renderer.renderMap(this.state.mapData, this.elements.visualMap, this.config, isSilent);
                     
                     // Pan-zoom is now initialized within Renderer.renderMap to avoid race conditions.
                     // We still need to track if it's the first time for mobile.
@@ -1398,7 +1398,7 @@
                 mapInterface.classList.remove('mobile-mode');
                 visualMapContainer.classList.remove('layout-mode-grid', 'layout-mode-map');
                 if (this.state.mapData) {
-                    this.Renderer.renderMap(this.state.mapData, this.elements.visualMap, this.config);
+                    this.Renderer.renderMap(this.state.mapData, this.elements.visualMap, this.config, isSilent);
                 }
             }
         },
@@ -1826,7 +1826,7 @@
             this.Renderer.renderImportantCharacters(this.state.mapData, this.elements, '');
             this.Renderer.renderExternalAreas(this.state.mapData, this.elements);
             if (this.state.isMobile) {
-                this.updateLayoutMode();
+                this.updateLayoutMode(isSilent);
             } else {
                 this.Renderer.renderMap(this.state.mapData, this.elements.visualMap, this.config, isSilent);
             }
